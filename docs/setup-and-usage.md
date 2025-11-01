@@ -54,3 +54,16 @@ Key changes to know:
 - Use `await` when accessing these APIs
 
 See [nextjs-16-migration.md](./nextjs-16-migration.md) for details.
+
+## Deployment (Vercel)
+
+For this single Next.js app, no `vercel.json` is required.
+
+Steps:
+
+1. Create a new Vercel project and import this GitHub repo.
+2. Framework preset: Next.js (defaults are fine).
+3. Set environment variables in the Vercel dashboard if needed.
+4. Each push to `main` (or PR) will trigger a Vercel build and deployment.
+
+Add `vercel.json` only if you need custom redirects/headers/rewrites or monorepo routing.

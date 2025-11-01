@@ -15,6 +15,23 @@ pnpm dev
 pnpm check
 ```
 
+## Testing
+
+```bash
+pnpm test       # run unit tests once
+pnpm test:watch # watch mode during development
+```
+
+The project uses Jest + React Testing Library.
+
+## CI
+
+GitHub Actions runs on PRs and pushes to `main`:
+
+- install dependencies with pnpm
+- run `pnpm check` (lint, format, type)
+- run `pnpm build`
+
 ## Stack
 
 - Next.js 16
