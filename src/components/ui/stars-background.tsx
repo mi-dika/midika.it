@@ -28,7 +28,17 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
   className,
 }) => {
   const [stars, setStars] = useState<StarProps[]>([]);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setShouldAnimate(!mq.matches);
+    update();
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
 
   const generateStars = useCallback(
     (width: number, height: number): StarProps[] => {
@@ -59,6 +69,7 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
   );
 
   useEffect(() => {
+    if (!shouldAnimate) return;
     const updateStars = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
@@ -91,9 +102,11 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
     minTwinkleSpeed,
     maxTwinkleSpeed,
     generateStars,
+    shouldAnimate,
   ]);
 
   useEffect(() => {
+    if (!shouldAnimate) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -125,7 +138,11 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [stars]);
+  }, [stars, shouldAnimate]);
+
+  if (!shouldAnimate) {
+    return <div className={cn('h-full w-full absolute inset-0', className)} />;
+  }
 
   return (
     <canvas

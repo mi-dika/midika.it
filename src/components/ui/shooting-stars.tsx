@@ -53,9 +53,20 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   className,
 }) => {
   const [star, setStar] = useState<ShootingStar | null>(null);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setShouldAnimate(!mq.matches);
+    update();
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (!shouldAnimate) return;
     const createStar = () => {
       const { x, y, angle } = getRandomStartPoint();
       const newStar: ShootingStar = {
@@ -76,9 +87,10 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
     createStar();
 
     return () => {};
-  }, [minSpeed, maxSpeed, minDelay, maxDelay]);
+  }, [minSpeed, maxSpeed, minDelay, maxDelay, shouldAnimate]);
 
   useEffect(() => {
+    if (!shouldAnimate) return;
     const moveStar = () => {
       if (star) {
         setStar((prevStar) => {
@@ -112,7 +124,11 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
 
     const animationFrame = requestAnimationFrame(moveStar);
     return () => cancelAnimationFrame(animationFrame);
-  }, [star]);
+  }, [star, shouldAnimate]);
+
+  if (!shouldAnimate) {
+    return null;
+  }
 
   return (
     <svg
