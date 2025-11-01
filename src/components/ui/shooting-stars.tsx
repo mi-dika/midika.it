@@ -1,6 +1,6 @@
-"use client";
-import { cn } from "@/lib/utils";
-import React, { useEffect, useState, useRef } from "react";
+'use client';
+import { cn } from '@/lib/utils';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface ShootingStar {
   id: number;
@@ -46,8 +46,8 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   maxSpeed = 30,
   minDelay = 1200,
   maxDelay = 4200,
-  starColor = "#9E00FF",
-  trailColor = "#2EB9DF",
+  starColor = '#9E00FF',
+  trailColor = '#2EB9DF',
   starWidth = 20,
   starHeight = 3,
   className,
@@ -117,7 +117,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   return (
     <svg
       ref={svgRef}
-      className={cn("w-full h-full absolute inset-0", className)}
+      className={cn('w-full h-full absolute inset-0', className)}
     >
       {star && (
         <rect
@@ -134,7 +134,10 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
       )}
       <defs>
         <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: trailColor, stopOpacity: 0.3 }} />
+          <stop
+            offset="0%"
+            style={{ stopColor: trailColor, stopOpacity: 0.3 }}
+          />
           <stop
             offset="100%"
             style={{ stopColor: starColor, stopOpacity: 1 }}
