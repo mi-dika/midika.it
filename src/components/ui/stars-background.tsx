@@ -1,6 +1,6 @@
-"use client";
-import { cn } from "@/lib/utils";
-import React, { useState, useEffect, useRef, useCallback } from "react";
+'use client';
+import { cn } from '@/lib/utils';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 
 interface StarProps {
   x: number;
@@ -28,7 +28,17 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
   className,
 }) => {
   const [stars, setStars] = useState<StarProps[]>([]);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+
+  useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setShouldAnimate(!mq.matches);
+    update();
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
 
   const generateStars = useCallback(
     (width: number, height: number): StarProps[] => {
@@ -59,11 +69,12 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
   );
 
   useEffect(() => {
+    if (!shouldAnimate) return;
     const updateStars = () => {
       const canvas = canvasRef.current;
       if (!canvas) return;
 
-      const ctx = canvas.getContext("2d");
+      const ctx = canvas.getContext('2d');
       if (!ctx) return;
 
       const { width, height } = canvas.getBoundingClientRect();
@@ -91,13 +102,15 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
     minTwinkleSpeed,
     maxTwinkleSpeed,
     generateStars,
+    shouldAnimate,
   ]);
 
   useEffect(() => {
+    if (!shouldAnimate) return;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext("2d");
+    const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
     let animationFrameId: number;
@@ -125,12 +138,16 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
     return () => {
       cancelAnimationFrame(animationFrameId);
     };
-  }, [stars]);
+  }, [stars, shouldAnimate]);
+
+  if (!shouldAnimate) {
+    return <div className={cn('h-full w-full absolute inset-0', className)} />;
+  }
 
   return (
     <canvas
       ref={canvasRef}
-      className={cn("h-full w-full absolute inset-0", className)}
+      className={cn('h-full w-full absolute inset-0', className)}
     />
   );
 };

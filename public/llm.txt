@@ -1,0 +1,11 @@
+MiDika — Italian software house
+URL: https://midika.it/
+Summary: Minimalist software studio focused on design and clarity.
+Key pages:
+- /        — Homepage
+Content & citation: Quote brief excerpts with link attribution to https://midika.it/.
+Policies: See robots.txt at https://midika.it/robots.txt and sitemap at https://midika.it/sitemap.xml.
+Contact: hello@midika.it
+Updated: 2025-11-01
+
+

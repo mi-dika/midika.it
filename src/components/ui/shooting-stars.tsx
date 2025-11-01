@@ -1,6 +1,6 @@
-"use client";
-import { cn } from "@/lib/utils";
-import React, { useEffect, useState, useRef } from "react";
+'use client';
+import { cn } from '@/lib/utils';
+import React, { useEffect, useState, useRef } from 'react';
 
 interface ShootingStar {
   id: number;
@@ -46,16 +46,27 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   maxSpeed = 30,
   minDelay = 1200,
   maxDelay = 4200,
-  starColor = "#9E00FF",
-  trailColor = "#2EB9DF",
+  starColor = '#9E00FF',
+  trailColor = '#2EB9DF',
   starWidth = 20,
   starHeight = 3,
   className,
 }) => {
   const [star, setStar] = useState<ShootingStar | null>(null);
+  const [shouldAnimate, setShouldAnimate] = useState(true);
   const svgRef = useRef<SVGSVGElement>(null);
 
   useEffect(() => {
+    if (typeof window === 'undefined' || !('matchMedia' in window)) return;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    const update = () => setShouldAnimate(!mq.matches);
+    update();
+    mq.addEventListener?.('change', update);
+    return () => mq.removeEventListener?.('change', update);
+  }, []);
+
+  useEffect(() => {
+    if (!shouldAnimate) return;
     const createStar = () => {
       const { x, y, angle } = getRandomStartPoint();
       const newStar: ShootingStar = {
@@ -76,9 +87,10 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
     createStar();
 
     return () => {};
-  }, [minSpeed, maxSpeed, minDelay, maxDelay]);
+  }, [minSpeed, maxSpeed, minDelay, maxDelay, shouldAnimate]);
 
   useEffect(() => {
+    if (!shouldAnimate) return;
     const moveStar = () => {
       if (star) {
         setStar((prevStar) => {
@@ -112,12 +124,16 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
 
     const animationFrame = requestAnimationFrame(moveStar);
     return () => cancelAnimationFrame(animationFrame);
-  }, [star]);
+  }, [star, shouldAnimate]);
+
+  if (!shouldAnimate) {
+    return null;
+  }
 
   return (
     <svg
       ref={svgRef}
-      className={cn("w-full h-full absolute inset-0", className)}
+      className={cn('w-full h-full absolute inset-0', className)}
     >
       {star && (
         <rect
@@ -134,7 +150,10 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
       )}
       <defs>
         <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop offset="0%" style={{ stopColor: trailColor, stopOpacity: 0.3 }} />
+          <stop
+            offset="0%"
+            style={{ stopColor: trailColor, stopOpacity: 0.3 }}
+          />
           <stop
             offset="100%"
             style={{ stopColor: starColor, stopOpacity: 1 }}

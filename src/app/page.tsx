@@ -1,5 +1,7 @@
-import { ShootingStars } from "@/components/ui/shooting-stars";
-import { StarsBackground } from "@/components/ui/stars-background";
+export const dynamic = 'force-static';
+export const revalidate = false;
+import { ShootingStars } from '@/components/ui/shooting-stars';
+import { StarsBackground } from '@/components/ui/stars-background';
 
 export default function Home() {
   return (
@@ -13,6 +15,9 @@ export default function Home() {
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-b from-black/80 via-transparent to-black/80" />
       </div>
+      <header className="relative z-10 sr-only" aria-label="Site header">
+        <span>MiDika</span>
+      </header>
       <main className="relative z-10 flex flex-col items-center gap-4 px-6 text-center">
         <h1 className="text-5xl font-semibold tracking-tight sm:text-6xl md:text-7xl">
           MIDIKA
@@ -21,6 +26,9 @@ export default function Home() {
           Italian Software House
         </p>
       </main>
+      <footer className="relative z-10 sr-only" aria-label="Site footer">
+        <span>© MiDika</span>
+      </footer>
     </div>
   );
 }

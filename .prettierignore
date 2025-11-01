@@ -1,0 +1,22 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+
+# Build outputs
+.next
+out
+dist
+build
+
+# Misc
+.DS_Store
+*.log
+.env*.local
+
+# TypeScript
+tsconfig.tsbuildinfo
+next-env.d.ts
+
+# Public assets
+public
+
