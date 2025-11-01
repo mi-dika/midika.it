@@ -1,0 +1,6 @@
+Contact: https://github.com/mi-dika/midika.it/security/advisories/new
+Policy: https://github.com/mi-dika/midika.it/blob/main/SECURITY.md
+Preferred-Languages: en, it
+Canonical: https://midika.it/.well-known/security.txt
+
+
