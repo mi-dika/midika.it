@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Analytics } from '@vercel/analytics/next';
+import { StarsBackground } from '@/components/ui/stars-background';
+import { ShootingStars } from '@/components/ui/shooting-stars';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -32,6 +34,7 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
 };
 
 export default function RootLayout({
@@ -45,9 +48,26 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable}`}
       suppressHydrationWarning
     >
-      <body className={`${GeistSans.className} antialiased`}>
-        {children}
-        <Analytics />
+      <body className={`${GeistSans.className} antialiased bg-black text-white`}>
+        <div className="fixed inset-0 z-0 pointer-events-none">
+          <StarsBackground
+            starDensity={0.0015}
+            className="[mask-image:radial-gradient(circle_at_center,white,transparent_85%)]"
+          />
+          <ShootingStars
+            starColor="#f97316"
+            trailColor="#f97316"
+            minDelay={1000}
+            maxDelay={3000}
+            starHeight={4}
+            starWidth={30}
+          />
+          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black/80" />
+        </div>
+        <div className="relative z-10 min-h-screen flex flex-col">
+          {children}
+          <Analytics />
+        </div>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
