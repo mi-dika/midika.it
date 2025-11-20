@@ -48,7 +48,10 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable}`}
       suppressHydrationWarning
     >
-      <body className={`${GeistSans.className} antialiased bg-black text-white`}>
+      <body
+        className={`${GeistSans.className} antialiased bg-black text-white`}
+        suppressHydrationWarning
+      >
         <div className="fixed inset-0 z-0 pointer-events-none">
           <StarsBackground
             starDensity={0.0015}
