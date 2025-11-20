@@ -70,26 +70,26 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   useEffect(() => {
     if (!shouldAnimate) return;
 
-    const getRandomStartPoint = () => {
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      const radius = 200; // Spawn within this radius from center
-      const angle = Math.random() * 360;
-      const distance = Math.random() * radius;
-      const x = centerX + distance * Math.cos((angle * Math.PI) / 180);
-      const y = centerY + distance * Math.sin((angle * Math.PI) / 180);
-      return { x, y, angle: angle + 180 }; // Move away from center roughly? Or just random direction? Let's keep random direction but spawn center. Actually, let's make them move generally across but confined.
-      // User said "inside the brain like stuff on the center".
-      // Let's spawn them in a wider area but fade them out as they leave.
-    };
-
     const createStar = () => {
-      // Spawn in a central area
-      const centerX = window.innerWidth / 2;
-      const centerY = window.innerHeight / 2;
-      const x = centerX + (Math.random() - 0.5) * 600; // Wider spread
-      const y = centerY + (Math.random() - 0.5) * 300;
-      const angle = Math.random() * 360;
+      const { innerWidth, innerHeight } = window;
+      const angle = 45; // Fixed angle for corner-to-corner flow
+
+      // Spawn logic: mostly from top-left
+      // We want them to cover the screen, so we spawn them along the top and left edges
+      // but slightly outside so they enter the screen smoothly.
+
+      const randomPos = Math.random() * (innerWidth + innerHeight);
+      let x, y;
+
+      if (randomPos < innerWidth) {
+        // Spawn from top edge
+        x = Math.random() * innerWidth;
+        y = -50; // Start slightly above
+      } else {
+        // Spawn from left edge
+        x = -50; // Start slightly left
+        y = Math.random() * innerHeight;
+      }
 
       const newStar: ShootingStar = {
         id: Date.now(),
@@ -121,9 +121,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
       setStars((prevStars) => {
         if (prevStars.length === 0) return prevStars;
 
-        const centerX = window.innerWidth / 2;
-        const centerY = window.innerHeight / 2;
-        const maxDistance = 500; // Distance at which they are fully transparent
+        const { innerWidth, innerHeight } = window;
 
         return prevStars
           .map((star) => {
@@ -134,15 +132,13 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
             const newDistance = star.distance + star.speed;
             const newScale = 1 + newDistance / 100;
 
-            // Calculate distance from center
-            const dx = newX - centerX;
-            const dy = newY - centerY;
-            const distFromCenter = Math.sqrt(dx * dx + dy * dy);
-
-            // Fade out as they leave the center
-            const opacity = Math.max(0, 1 - (distFromCenter / maxDistance));
-
-            if (opacity <= 0) {
+            // Check if star is out of bounds
+            if (
+              newX > innerWidth + 50 ||
+              newY > innerHeight + 50 ||
+              newX < -50 ||
+              newY < -50
+            ) {
               return null;
             }
 
@@ -152,7 +148,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
               y: newY,
               distance: newDistance,
               scale: newScale,
-              opacity,
+              opacity: 1, // Keep opacity full until it leaves screen
             };
           })
           .filter((star) => star !== null) as ShootingStar[];
@@ -172,7 +168,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   return (
     <svg
       ref={svgRef}
-      className={cn('w-full h-full absolute inset-0', className)}
+      className={cn('w-full h-full absolute inset-0 pointer-events-none', className)}
     >
       {stars.map((star) => (
         <rect
