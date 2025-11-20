@@ -1,6 +1,6 @@
 'use client';
 import { cn } from '@/lib/utils';
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useId } from 'react';
 
 interface ShootingStar {
   id: number;
@@ -10,6 +10,7 @@ interface ShootingStar {
   scale: number;
   speed: number;
   distance: number;
+  opacity: number;
 }
 
 interface ShootingStarsProps {
@@ -49,12 +50,13 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   starColor = '#9E00FF',
   trailColor = '#2EB9DF',
   starWidth = 20,
-  starHeight = 3,
+  starHeight = 1,
   className,
 }) => {
-  const [star, setStar] = useState<ShootingStar | null>(null);
+  const [stars, setStars] = useState<ShootingStar[]>([]);
   const [shouldAnimate, setShouldAnimate] = useState(true);
   const svgRef = useRef<SVGSVGElement>(null);
+  const gradientId = useId();
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('matchMedia' in window)) return;
@@ -67,64 +69,101 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
 
   useEffect(() => {
     if (!shouldAnimate) return;
+
+    const getRandomStartPoint = () => {
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const radius = 200; // Spawn within this radius from center
+      const angle = Math.random() * 360;
+      const distance = Math.random() * radius;
+      const x = centerX + distance * Math.cos((angle * Math.PI) / 180);
+      const y = centerY + distance * Math.sin((angle * Math.PI) / 180);
+      return { x, y, angle: angle + 180 }; // Move away from center roughly? Or just random direction? Let's keep random direction but spawn center. Actually, let's make them move generally across but confined.
+      // User said "inside the brain like stuff on the center".
+      // Let's spawn them in a wider area but fade them out as they leave.
+    };
+
     const createStar = () => {
-      const { x, y, angle } = getRandomStartPoint();
+      // Spawn in a central area
+      const centerX = window.innerWidth / 2;
+      const centerY = window.innerHeight / 2;
+      const x = centerX + (Math.random() - 0.5) * 600; // Wider spread
+      const y = centerY + (Math.random() - 0.5) * 300;
+      const angle = Math.random() * 360;
+
       const newStar: ShootingStar = {
         id: Date.now(),
         x,
         y,
         angle,
-        scale: 1.5,
+        scale: 1,
         speed: Math.random() * (maxSpeed - minSpeed) + minSpeed,
         distance: 0,
+        opacity: 1,
       };
-      setStar(newStar);
+      setStars((prev) => [...prev, newStar]);
 
       const randomDelay = Math.random() * (maxDelay - minDelay) + minDelay;
       setTimeout(createStar, randomDelay);
     };
 
-    createStar();
+    const timeoutId = setTimeout(createStar, minDelay);
 
-    return () => {};
+    return () => clearTimeout(timeoutId);
   }, [minSpeed, maxSpeed, minDelay, maxDelay, shouldAnimate]);
 
   useEffect(() => {
     if (!shouldAnimate) return;
-    const moveStar = () => {
-      if (star) {
-        setStar((prevStar) => {
-          if (!prevStar) return null;
-          const newX =
-            prevStar.x +
-            prevStar.speed * Math.cos((prevStar.angle * Math.PI) / 180);
-          const newY =
-            prevStar.y +
-            prevStar.speed * Math.sin((prevStar.angle * Math.PI) / 180);
-          const newDistance = prevStar.distance + prevStar.speed;
-          const newScale = 1 + newDistance / 100;
-          if (
-            newX < -20 ||
-            newX > window.innerWidth + 20 ||
-            newY < -20 ||
-            newY > window.innerHeight + 20
-          ) {
-            return null;
-          }
-          return {
-            ...prevStar,
-            x: newX,
-            y: newY,
-            distance: newDistance,
-            scale: newScale,
-          };
-        });
-      }
+
+    let animationFrameId: number;
+
+    const moveStars = () => {
+      setStars((prevStars) => {
+        if (prevStars.length === 0) return prevStars;
+
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+        const maxDistance = 500; // Distance at which they are fully transparent
+
+        return prevStars
+          .map((star) => {
+            const newX =
+              star.x + star.speed * Math.cos((star.angle * Math.PI) / 180);
+            const newY =
+              star.y + star.speed * Math.sin((star.angle * Math.PI) / 180);
+            const newDistance = star.distance + star.speed;
+            const newScale = 1 + newDistance / 100;
+
+            // Calculate distance from center
+            const dx = newX - centerX;
+            const dy = newY - centerY;
+            const distFromCenter = Math.sqrt(dx * dx + dy * dy);
+
+            // Fade out as they leave the center
+            const opacity = Math.max(0, 1 - (distFromCenter / maxDistance));
+
+            if (opacity <= 0) {
+              return null;
+            }
+
+            return {
+              ...star,
+              x: newX,
+              y: newY,
+              distance: newDistance,
+              scale: newScale,
+              opacity,
+            };
+          })
+          .filter((star) => star !== null) as ShootingStar[];
+      });
+
+      animationFrameId = requestAnimationFrame(moveStars);
     };
 
-    const animationFrame = requestAnimationFrame(moveStar);
-    return () => cancelAnimationFrame(animationFrame);
-  }, [star, shouldAnimate]);
+    animationFrameId = requestAnimationFrame(moveStars);
+    return () => cancelAnimationFrame(animationFrameId);
+  }, [shouldAnimate]);
 
   if (!shouldAnimate) {
     return null;
@@ -135,24 +174,25 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
       ref={svgRef}
       className={cn('w-full h-full absolute inset-0', className)}
     >
-      {star && (
+      {stars.map((star) => (
         <rect
           key={star.id}
           x={star.x}
           y={star.y}
           width={starWidth * star.scale}
           height={starHeight}
-          fill="url(#gradient)"
+          fill={`url(#${gradientId})`}
           transform={`rotate(${star.angle}, ${
             star.x + (starWidth * star.scale) / 2
           }, ${star.y + starHeight / 2})`}
+          style={{ opacity: star.opacity }}
         />
-      )}
+      ))}
       <defs>
-        <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+        <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
           <stop
             offset="0%"
-            style={{ stopColor: trailColor, stopOpacity: 0.3 }}
+            style={{ stopColor: trailColor, stopOpacity: 0 }}
           />
           <stop
             offset="100%"
