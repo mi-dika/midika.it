@@ -102,13 +102,14 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
     updateStars();
 
     const resizeObserver = new ResizeObserver(updateStars);
-    if (canvasRef.current) {
-      resizeObserver.observe(canvasRef.current);
+    const canvas = canvasRef.current;
+    if (canvas) {
+      resizeObserver.observe(canvas);
     }
 
     return () => {
-      if (canvasRef.current) {
-        resizeObserver.unobserve(canvasRef.current);
+      if (canvas) {
+        resizeObserver.unobserve(canvas);
       }
       resizeObserver.disconnect();
     };
@@ -155,13 +156,16 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
         const dx = star.x - mouseRef.current.x;
         const dy = star.y - mouseRef.current.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
-        const maxDistance = 200;
+        const maxDistance = 200; // Reduced interaction radius for more concentration
 
         let targetOpacity = star.baseOpacity;
+        let scale = 1;
 
         if (distance < maxDistance) {
           const proximity = 1 - distance / maxDistance;
-          targetOpacity = star.baseOpacity + (1 - star.baseOpacity) * proximity;
+          targetOpacity =
+            star.baseOpacity + (1 - star.baseOpacity) * proximity * 1.5; // Boost opacity
+          scale = 1 + proximity; // Scale up star size
         }
 
         // Twinkle
@@ -178,7 +182,7 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
 
         // Draw star
         ctx.beginPath();
-        ctx.arc(star.x, star.y, star.radius, 0, Math.PI * 2);
+        ctx.arc(star.x, star.y, star.radius * scale, 0, Math.PI * 2);
         ctx.fillStyle = `rgba(255, 255, 255, ${star.opacity})`;
         ctx.fill();
       });

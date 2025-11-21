@@ -10,6 +10,7 @@ interface ShootingStar {
   scale: number;
   speed: number;
   distance: number;
+  maxDistance: number;
   opacity: number;
 }
 
@@ -25,23 +26,6 @@ interface ShootingStarsProps {
   className?: string;
 }
 
-const getRandomStartPoint = () => {
-  const side = Math.floor(Math.random() * 4);
-  const offset = Math.random() * window.innerWidth;
-
-  switch (side) {
-    case 0:
-      return { x: offset, y: 0, angle: 45 };
-    case 1:
-      return { x: window.innerWidth, y: offset, angle: 135 };
-    case 2:
-      return { x: offset, y: window.innerHeight, angle: 225 };
-    case 3:
-      return { x: 0, y: offset, angle: 315 };
-    default:
-      return { x: 0, y: 0, angle: 45 };
-  }
-};
 export const ShootingStars: React.FC<ShootingStarsProps> = ({
   minSpeed = 10,
   maxSpeed = 30,
@@ -99,7 +83,8 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
         scale: 1,
         speed: Math.random() * (maxSpeed - minSpeed) + minSpeed,
         distance: 0,
-        opacity: 1,
+        maxDistance: Math.random() * (innerWidth + innerHeight) * 0.7 + 200, // Random distance
+        opacity: 0, // Start invisible and fade in
       };
       setStars((prev) => [...prev, newStar]);
 
@@ -121,7 +106,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
       setStars((prevStars) => {
         if (prevStars.length === 0) return prevStars;
 
-        const { innerWidth, innerHeight } = window;
+        if (prevStars.length === 0) return prevStars;
 
         return prevStars
           .map((star) => {
@@ -132,14 +117,23 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
             const newDistance = star.distance + star.speed;
             const newScale = 1 + newDistance / 100;
 
-            // Check if star is out of bounds
-            if (
-              newX > innerWidth + 50 ||
-              newY > innerHeight + 50 ||
-              newX < -50 ||
-              newY < -50
-            ) {
+            // Check if star is finished
+            if (newDistance >= star.maxDistance) {
               return null;
+            }
+
+            // Opacity logic
+            let opacity = 1;
+            const fadeInDistance = 100;
+            const fadeOutDistance = star.maxDistance * 0.8;
+
+            if (newDistance < fadeInDistance) {
+              opacity = newDistance / fadeInDistance;
+            } else if (newDistance > fadeOutDistance) {
+              opacity =
+                1 -
+                (newDistance - fadeOutDistance) /
+                  (star.maxDistance - fadeOutDistance);
             }
 
             return {
@@ -148,7 +142,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
               y: newY,
               distance: newDistance,
               scale: newScale,
-              opacity: 1, // Keep opacity full until it leaves screen
+              opacity: Math.max(0, Math.min(1, opacity)),
             };
           })
           .filter((star) => star !== null) as ShootingStar[];
