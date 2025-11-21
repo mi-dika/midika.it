@@ -4,6 +4,7 @@ import { GeistMono } from 'geist/font/mono';
 import { Analytics } from '@vercel/analytics/next';
 import { StarsBackground } from '@/components/ui/stars-background';
 import { ShootingStars } from '@/components/ui/shooting-stars';
+import { LanguageProvider } from '@/lib/language-context';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -12,20 +13,20 @@ export const metadata: Metadata = {
     default: 'MiDika — Italian software house',
     template: '%s — MiDika',
   },
-  description: 'Italian software house focused on minimalism and design.',
+  description: 'Italian software house',
   alternates: { canonical: '/' },
   openGraph: {
     type: 'website',
     url: 'https://midika.it/',
     title: 'MiDika — Italian software house',
-    description: 'Italian software house focused on minimalism and design.',
+    description: 'Italian software house',
     images: [{ url: '/og.jpg', width: 1200, height: 630 }],
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
     title: 'MiDika — Italian software house',
-    description: 'Italian software house focused on minimalism and design.',
+    description: 'Italian software house',
     images: ['/og.jpg'],
   },
   robots: { index: true, follow: true },
@@ -52,25 +53,27 @@ export default function RootLayout({
         className={`${GeistSans.className} antialiased bg-black text-white`}
         suppressHydrationWarning
       >
-        <div className="fixed inset-0 z-0 pointer-events-none">
-          <StarsBackground
-            starDensity={0.0015}
-            className="[mask-image:radial-gradient(circle_at_center,white,transparent_85%)]"
-          />
-          <ShootingStars
-            starColor="#f97316"
-            trailColor="#f97316"
-            minDelay={1000}
-            maxDelay={3000}
-            starHeight={4}
-            starWidth={30}
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black/80" />
-        </div>
-        <div className="relative z-10 min-h-screen flex flex-col">
-          {children}
-          <Analytics />
-        </div>
+        <LanguageProvider>
+          <div className="fixed inset-0 z-0 pointer-events-none">
+            <StarsBackground
+              starDensity={0.0015}
+              className="[mask-image:radial-gradient(circle_at_center,white,transparent_85%)]"
+            />
+            <ShootingStars
+              starColor="#f97316"
+              trailColor="#f97316"
+              minDelay={1000}
+              maxDelay={3000}
+              starHeight={4}
+              starWidth={30}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black/80" />
+          </div>
+          <div className="relative z-10 min-h-screen flex flex-col">
+            {children}
+            <Analytics />
+          </div>
+        </LanguageProvider>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -80,8 +83,7 @@ export default function RootLayout({
               name: 'MiDika',
               url: 'https://midika.it/',
               logo: 'https://midika.it/logo.png',
-              description:
-                'Italian software house focused on minimalism and design.',
+              description: 'Italian software house',
             }),
           }}
         />

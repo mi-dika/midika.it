@@ -6,7 +6,10 @@ interface GlowingTextProps {
   className?: string;
 }
 
-export const GlowingText: React.FC<GlowingTextProps> = ({ text, className }) => {
+export const GlowingText: React.FC<GlowingTextProps> = ({
+  text,
+  className,
+}) => {
   return (
     <div className={cn('relative flex items-center justify-center', className)}>
       {/* Blurred glow behind */}

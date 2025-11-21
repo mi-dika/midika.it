@@ -7,6 +7,7 @@ interface StarProps {
   y: number;
   radius: number;
   opacity: number;
+  baseOpacity: number;
   twinkleSpeed: number | null;
   vx: number;
   vy: number;
@@ -32,6 +33,7 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
   const starsRef = useRef<StarProps[]>([]);
   const [shouldAnimate, setShouldAnimate] = useState(true);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const mouseRef = useRef<{ x: number; y: number }>({ x: 0, y: 0 });
 
   useEffect(() => {
     if (typeof window === 'undefined' || !('matchMedia' in window)) return;
@@ -49,17 +51,19 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
       return Array.from({ length: numStars }, () => {
         const shouldTwinkle =
           allStarsTwinkle || Math.random() < twinkleProbability;
+        const baseOpacity = Math.random() * 0.3 + 0.5;
         return {
           x: Math.random() * width,
           y: Math.random() * height,
           radius: Math.random() * 0.15 + 1.0,
-          opacity: Math.random() * 0.3 + 0.7,
+          opacity: baseOpacity,
+          baseOpacity,
           twinkleSpeed: shouldTwinkle
             ? minTwinkleSpeed +
               Math.random() * (maxTwinkleSpeed - minTwinkleSpeed)
             : null,
-          vx: (Math.random() - 0.5) * 0.2, // Initialize vx with a small random value
-          vy: (Math.random() - 0.5) * 0.2, // Initialize vy with a small random value
+          vx: (Math.random() - 0.5) * 0.2,
+          vy: (Math.random() - 0.5) * 0.2,
         };
       });
     },
@@ -71,6 +75,17 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
       maxTwinkleSpeed,
     ]
   );
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      mouseRef.current = { x: e.clientX, y: e.clientY };
+    };
+
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => {
+      window.removeEventListener('mousemove', handleMouseMove);
+    };
+  }, []);
 
   useEffect(() => {
     if (!shouldAnimate) return;
@@ -127,15 +142,39 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
         star.y += star.vy;
 
         // Bounce off edges
-        if (star.x < 0 || star.x > canvas.width) star.vx *= -1;
-        if (star.y < 0 || star.y > canvas.height) star.vy *= -1;
+        if (star.x < 0 || star.x > canvas.width) {
+          star.vx *= -1;
+          star.x = Math.max(0, Math.min(star.x, canvas.width));
+        }
+        if (star.y < 0 || star.y > canvas.height) {
+          star.vy *= -1;
+          star.y = Math.max(0, Math.min(star.y, canvas.height));
+        }
+
+        // Mouse interaction - Light up
+        const dx = star.x - mouseRef.current.x;
+        const dy = star.y - mouseRef.current.y;
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const maxDistance = 200;
+
+        let targetOpacity = star.baseOpacity;
+
+        if (distance < maxDistance) {
+          const proximity = 1 - distance / maxDistance;
+          targetOpacity = star.baseOpacity + (1 - star.baseOpacity) * proximity;
+        }
 
         // Twinkle
         if (star.twinkleSpeed !== null) {
-          star.opacity =
-            0.5 +
-            Math.abs(Math.sin((Date.now() * 0.001) / star.twinkleSpeed) * 0.5);
+          const twinkle = Math.abs(
+            Math.sin((Date.now() * 0.001) / star.twinkleSpeed) * 0.5
+          );
+          targetOpacity += twinkle * 0.3; // Add twinkle effect on top
         }
+
+        // Smooth transition for opacity
+        star.opacity += (targetOpacity - star.opacity) * 0.1;
+        star.opacity = Math.min(1, Math.max(0, star.opacity));
 
         // Draw star
         ctx.beginPath();
@@ -153,11 +192,11 @@ export const StarsBackground: React.FC<StarBackgroundProps> = ({
           const distance = Math.sqrt(dx * dx + dy * dy);
 
           if (distance < 100) {
-            // Dynamic opacity based on distance and a subtle pulse
-            const baseOpacity = 0.2 * (1 - distance / 100);
-            const pulse =
-              0.8 + 0.2 * Math.sin(Date.now() * 0.002 + star.x * 0.01); // Unique pulse per connection roughly
-            const opacity = baseOpacity * pulse;
+            // Dynamic opacity based on distance and star opacity
+            const baseConnectionOpacity = 0.15 * (1 - distance / 100);
+            // Use the average opacity of the two connected stars to influence connection brightness
+            const connectionBrightness = (star.opacity + otherStar.opacity) / 2;
+            const opacity = baseConnectionOpacity * connectionBrightness * 1.5; // Boost it a bit
 
             ctx.beginPath();
             ctx.moveTo(star.x, star.y);

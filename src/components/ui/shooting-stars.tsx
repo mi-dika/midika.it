@@ -168,7 +168,10 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   return (
     <svg
       ref={svgRef}
-      className={cn('w-full h-full absolute inset-0 pointer-events-none', className)}
+      className={cn(
+        'w-full h-full absolute inset-0 pointer-events-none',
+        className
+      )}
     >
       {stars.map((star) => (
         <rect
@@ -186,10 +189,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
       ))}
       <defs>
         <linearGradient id={gradientId} x1="0%" y1="0%" x2="100%" y2="100%">
-          <stop
-            offset="0%"
-            style={{ stopColor: trailColor, stopOpacity: 0 }}
-          />
+          <stop offset="0%" style={{ stopColor: trailColor, stopOpacity: 0 }} />
           <stop
             offset="100%"
             style={{ stopColor: starColor, stopOpacity: 1 }}
