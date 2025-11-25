@@ -80,12 +80,15 @@ export default function Home() {
 
   // Regenerate follow-up questions when a new AI response arrives
   useEffect(() => {
-    if (messages.length > 0) {
+    if (
+      messages.length > 0 &&
+      messages[messages.length - 1].role === 'assistant'
+    ) {
       const shuffle = <T,>(arr: T[]) =>
         [...arr].sort(() => Math.random() - 0.5);
       setFollowUpQuestions(shuffle(FOLLOW_UP_QUESTIONS).slice(0, 3));
     }
-  }, [messages.length]);
+  }, [messages]);
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
