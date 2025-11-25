@@ -7,35 +7,89 @@ import { ShootingStars } from '@/components/ui/shooting-stars';
 import { LanguageProvider } from '@/lib/language-context';
 import './globals.css';
 
+const siteConfig = {
+  name: 'MiDika',
+  title: 'MiDika — Italian software house',
+  description:
+    'Italian software house focused on minimalism and design. We build clean, efficient, and maintainable software solutions.',
+  url: 'https://midika.it',
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://midika.it'),
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: 'MiDika — Italian software house',
-    template: '%s — MiDika',
+    default: siteConfig.title,
+    template: `%s — ${siteConfig.name}`,
   },
-  description: 'Italian software house',
-  alternates: { canonical: '/' },
+  description: siteConfig.description,
+  keywords: [
+    'software house',
+    'web development',
+    'app development',
+    'Italy',
+    'Milan',
+    'minimalist design',
+    'custom software',
+  ],
+  authors: [
+    { name: 'Nicholas Sollazzo' },
+    { name: 'Martire Baldassarre' },
+    { name: 'Domenico Magaretti' },
+  ],
+  creator: siteConfig.name,
+  publisher: siteConfig.name,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: '/',
+    languages: {
+      'en-US': '/',
+      'it-IT': '/it',
+    },
+  },
   openGraph: {
     type: 'website',
-    url: 'https://midika.it/',
-    title: 'MiDika — Italian software house',
-    description: 'Italian software house',
-    images: [{ url: '/og.jpg', width: 1200, height: 630 }],
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: siteConfig.title,
+    description: siteConfig.description,
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MiDika — Italian software house',
-    description: 'Italian software house',
-    images: ['/og.jpg'],
+    site: '@midaboratory',
+    creator: '@midaboratory',
+    title: siteConfig.title,
+    description: siteConfig.description,
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  // TODO: Add verification tokens when available
+  // verification: {
+  //   google: 'google-site-verification-token',
+  // },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#000000' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+  ],
 };
 
 export default function RootLayout({
@@ -83,7 +137,7 @@ export default function RootLayout({
               name: 'MiDika',
               legalName: 'MIDIKA SRL',
               url: 'https://midika.it/',
-              logo: 'https://midika.it/logo.png',
+              logo: 'https://midika.it/icon.svg',
               description:
                 'Italian software house focused on minimalism and design.',
               address: {
