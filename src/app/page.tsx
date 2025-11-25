@@ -1,22 +1,100 @@
 'use client';
 
 import { GlowingText } from '@/components/ui/glowing-text';
-import { ArrowRight, Loader2 } from 'lucide-react';
+import { ChatMessage } from '@/components/ui/chat-message';
+import { ArrowRight, Loader2, Square, X } from 'lucide-react';
 import { useLanguage } from '@/lib/language-context';
 import { useChat } from '@ai-sdk/react';
+import { DefaultChatTransport } from 'ai';
 import { useRef, useEffect, useState, type FormEvent } from 'react';
-import type { UIMessage } from 'ai';
+
+// Pool of suggested questions (3 will be randomly selected each refresh)
+const SUGGESTED_QUESTIONS = [
+  'Who is MiDika?',
+  'What services do you offer?',
+  'Tell me about your team',
+  'What technologies do you use?',
+  'How can I contact you?',
+  'What makes MiDika different?',
+  'Do you work with startups?',
+  'What is your design philosophy?',
+  'How do I start a project with you?',
+];
+
+// Pool of rotating placeholders for the input field
+const INPUT_PLACEHOLDERS = [
+  'How can we transform your idea?',
+  'What can we build for you?',
+  'Tell us about your project...',
+  'What challenge can we solve?',
+  'Describe your vision...',
+  'What would you like to create?',
+  'How can we help you today?',
+];
+
+// Pool of follow-up questions to suggest after AI responses
+const FOLLOW_UP_QUESTIONS = [
+  'Can you tell me more about your pricing?',
+  'What is your development process?',
+  'How long does a typical project take?',
+  'Do you offer ongoing support?',
+  'Can I see some examples of your work?',
+  'What technologies do you specialize in?',
+  'How do I get started with a project?',
+  'Do you work with international clients?',
+  'What makes your approach unique?',
+  'Can you help with an existing project?',
+];
 
 export default function Home() {
   const { t } = useLanguage();
-  const { messages, sendMessage, status } = useChat();
+  const { messages, setMessages, sendMessage, status, stop } = useChat({
+    transport: new DefaultChatTransport({
+      api: '/api/chat',
+    }),
+  });
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const messagesContainerRef = useRef<HTMLDivElement>(null);
 
   const isLoading = status === 'streaming' || status === 'submitted';
 
+  // Random values - initialized with deterministic defaults to avoid hydration mismatch
+  const [suggestions, setSuggestions] = useState(
+    SUGGESTED_QUESTIONS.slice(0, 3)
+  );
+  const [placeholder, setPlaceholder] = useState(INPUT_PLACEHOLDERS[0]);
+  const [followUpQuestions, setFollowUpQuestions] = useState(
+    FOLLOW_UP_QUESTIONS.slice(0, 3)
+  );
+
+  // Randomize on client mount only (avoids SSR/client mismatch)
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const shuffle = <T,>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
+    setSuggestions(shuffle(SUGGESTED_QUESTIONS).slice(0, 3));
+    setPlaceholder(
+      INPUT_PLACEHOLDERS[Math.floor(Math.random() * INPUT_PLACEHOLDERS.length)]
+    );
+    setFollowUpQuestions(shuffle(FOLLOW_UP_QUESTIONS).slice(0, 3));
+  }, []);
+
+  // Regenerate follow-up questions when a new AI response arrives
+  useEffect(() => {
+    if (messages.length > 0) {
+      const shuffle = <T,>(arr: T[]) =>
+        [...arr].sort(() => Math.random() - 0.5);
+      setFollowUpQuestions(shuffle(FOLLOW_UP_QUESTIONS).slice(0, 3));
+    }
+  }, [messages.length]);
+
+  // Auto-scroll to bottom when messages change
+  useEffect(() => {
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth',
+      });
+    }
   }, [messages]);
 
   const handleSubmit = async (e: FormEvent) => {
@@ -28,13 +106,18 @@ export default function Home() {
     await sendMessage({ text: userMessage });
   };
 
-  const getMessageText = (message: UIMessage) => {
-    return message.parts
-      .filter(
-        (part): part is { type: 'text'; text: string } => part.type === 'text'
-      )
-      .map((part) => part.text)
-      .join('');
+  const handleSuggestionClick = async (suggestion: string) => {
+    if (isLoading) return;
+    await sendMessage({ text: suggestion });
+  };
+
+  const handleCloseChat = () => {
+    setMessages([]);
+    setInput('');
+  };
+
+  const handleStop = () => {
+    stop();
   };
 
   return (
@@ -49,47 +132,91 @@ export default function Home() {
               <p className="mt-6 max-w-2xl text-lg font-light text-white/70 sm:text-xl text-center">
                 {t('subtitle')}
               </p>
+              {/* Quick suggestions */}
+              <div className="mt-8 flex flex-wrap justify-center gap-2">
+                {suggestions.map((suggestion) => (
+                  <button
+                    key={suggestion}
+                    onClick={() => handleSuggestionClick(suggestion)}
+                    className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/60 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-white"
+                  >
+                    {suggestion}
+                  </button>
+                ))}
+              </div>
             </>
           ) : (
-            <div className="w-full flex-1 overflow-y-auto max-h-[60vh] space-y-4 px-4 scrollbar-thin">
-              {messages.map((message) => (
-                <div
-                  key={message.id}
-                  className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'}`}
+            <div className="w-full flex-1 flex flex-col max-h-[60vh]">
+              {/* Close chat button */}
+              <div className="flex justify-end px-4 pb-2">
+                <button
+                  onClick={handleCloseChat}
+                  className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/50 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white/70"
                 >
-                  <div
-                    className={`max-w-[80%] rounded-2xl px-4 py-3 ${
-                      message.role === 'user'
-                        ? 'bg-orange-500/20 text-white'
-                        : 'bg-white/5 text-white/90'
-                    }`}
-                  >
-                    <p className="text-sm whitespace-pre-wrap">
-                      {getMessageText(message)}
-                    </p>
-                  </div>
-                </div>
-              ))}
-              <div ref={messagesEndRef} />
+                  <X className="h-3 w-3" />
+                  Close chat
+                </button>
+              </div>
+              <div
+                ref={messagesContainerRef}
+                className="flex-1 overflow-y-auto space-y-6 px-4 pb-4 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-white/10"
+              >
+                {messages.map((message, index) => (
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    isStreaming={status === 'streaming'}
+                    isLastMessage={index === messages.length - 1}
+                  />
+                ))}
+                {/* Follow-up suggestions after AI response */}
+                {messages.length > 0 &&
+                  messages[messages.length - 1].role === 'assistant' &&
+                  !isLoading && (
+                    <div className="flex flex-wrap gap-2 pt-2">
+                      {followUpQuestions.map((question) => (
+                        <button
+                          key={question}
+                          onClick={() => handleSuggestionClick(question)}
+                          className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/50 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-white"
+                        >
+                          {question}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                <div ref={messagesEndRef} />
+              </div>
             </div>
           )}
         </div>
 
         {/* Bottom Input */}
-        <div className="flex w-full flex-col items-center gap-8 pb-8 pointer-events-auto">
+        <div className="flex w-full flex-col items-center gap-4 pb-8 pointer-events-auto">
+          {/* Stop button when streaming */}
+          {isLoading && (
+            <button
+              onClick={handleStop}
+              className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm text-white/70 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
+            >
+              <Square className="h-3 w-3 fill-current" />
+              Stop generating
+            </button>
+          )}
+
           <form onSubmit={handleSubmit} className="relative w-full max-w-md">
             <input
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder={t('inputPlaceholder')}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 pr-12 text-white backdrop-blur-sm transition-all placeholder:text-white/30 focus:border-white/20 focus:bg-white/10 focus:outline-none focus:ring-0"
+              placeholder={placeholder}
+              className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 pr-12 text-white backdrop-blur-sm transition-all placeholder:text-white/30 focus:border-orange-500/30 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-orange-500/20"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-white/10 p-2 text-white/50 transition-colors hover:bg-white/20 hover:text-orange-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-white/10 p-2 text-white/50 transition-all hover:bg-orange-500/20 hover:text-orange-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/10 disabled:hover:text-white/50"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -98,6 +225,11 @@ export default function Home() {
               )}
             </button>
           </form>
+
+          {/* Powered by indicator */}
+          <p className="text-xs text-white/30">
+            Powered by AI • Responses may be inaccurate
+          </p>
         </div>
       </section>
 
