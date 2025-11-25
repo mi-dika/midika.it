@@ -191,7 +191,7 @@ export function ChatMessage({
                 <Markdown content={text} />
                 {/* Typing cursor */}
                 {isStreaming && isLastMessage && (
-                  <span className="ml-0.5 inline-block h-4 w-0.5 animate-pulse bg-orange-400" />
+                  <span className="ml-1 inline-block h-2 w-2 rounded-full animate-pulse bg-orange-500" />
                 )}
               </div>
             )}

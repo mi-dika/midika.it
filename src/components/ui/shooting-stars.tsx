@@ -126,8 +126,6 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
       setStars((prevStars) => {
         if (prevStars.length === 0) return prevStars;
 
-        if (prevStars.length === 0) return prevStars;
-
         return prevStars
           .map((star) => {
             const newX =
