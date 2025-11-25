@@ -81,9 +81,38 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: 'MiDika',
+              legalName: 'MIDIKA SRL',
               url: 'https://midika.it/',
               logo: 'https://midika.it/logo.png',
-              description: 'Italian software house',
+              description:
+                'Italian software house focused on minimalism and design.',
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: 'Via Giovanni Boccaccio 37',
+                addressLocality: 'Milano',
+                postalCode: '20123',
+                addressCountry: 'IT',
+              },
+              telephone: '+39 351 989 6805',
+              email: 'info@midika.it',
+              vatID: 'IT12042860960',
+              founder: [
+                {
+                  '@type': 'Person',
+                  name: 'Nicholas Sollazzo',
+                  jobTitle: 'CEO & Co-Founder',
+                },
+                {
+                  '@type': 'Person',
+                  name: 'Martire Baldassarre',
+                  jobTitle: 'CFO & Co-Founder',
+                },
+                {
+                  '@type': 'Person',
+                  name: 'Domenico Magaretti',
+                  jobTitle: 'CSO & Co-Founder',
+                },
+              ],
             }),
           }}
         />
