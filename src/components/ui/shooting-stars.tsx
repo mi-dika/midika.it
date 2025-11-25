@@ -42,6 +42,8 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   const svgRef = useRef<SVGSVGElement>(null);
   const gradientId = useId();
 
+  const [isVisible, setIsVisible] = useState(true);
+
   useEffect(() => {
     if (typeof window === 'undefined' || !('matchMedia' in window)) return;
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
@@ -51,8 +53,26 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
     return () => mq.removeEventListener?.('change', update);
   }, []);
 
+  // Track tab visibility to avoid star burst when returning to tab
   useEffect(() => {
-    if (!shouldAnimate) return;
+    const handleVisibilityChange = () => {
+      const visible = document.visibilityState === 'visible';
+      setIsVisible(visible);
+      if (visible) {
+        // Clear accumulated stars when tab becomes visible again
+        setStars([]);
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () =>
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, []);
+
+  useEffect(() => {
+    if (!shouldAnimate || !isVisible) return;
+
+    let timeoutId: ReturnType<typeof setTimeout>;
 
     const createStar = () => {
       const { innerWidth, innerHeight } = window;
@@ -89,16 +109,16 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
       setStars((prev) => [...prev, newStar]);
 
       const randomDelay = Math.random() * (maxDelay - minDelay) + minDelay;
-      setTimeout(createStar, randomDelay);
+      timeoutId = setTimeout(createStar, randomDelay);
     };
 
-    const timeoutId = setTimeout(createStar, minDelay);
+    timeoutId = setTimeout(createStar, minDelay);
 
     return () => clearTimeout(timeoutId);
-  }, [minSpeed, maxSpeed, minDelay, maxDelay, shouldAnimate]);
+  }, [minSpeed, maxSpeed, minDelay, maxDelay, shouldAnimate, isVisible]);
 
   useEffect(() => {
-    if (!shouldAnimate) return;
+    if (!shouldAnimate || !isVisible) return;
 
     let animationFrameId: number;
 
@@ -153,7 +173,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
 
     animationFrameId = requestAnimationFrame(moveStars);
     return () => cancelAnimationFrame(animationFrameId);
-  }, [shouldAnimate]);
+  }, [shouldAnimate, isVisible]);
 
   if (!shouldAnimate) {
     return null;
