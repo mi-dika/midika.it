@@ -126,7 +126,13 @@ const tools = {
             : 'areas' in s && s.areas
               ? s.areas
               : [];
-        return `### ${s.name}\n${s.description}\n\n**Technologies:** ${items.join(', ')}`;
+        const label =
+          'technologies' in s && s.technologies
+            ? 'Technologies'
+            : 'areas' in s && s.areas
+              ? 'Areas'
+              : '';
+        return `### ${s.name}\n${s.description}\n\n**${label}:** ${items.join(', ')}`;
       }).join('\n\n')}`;
     },
   }),
