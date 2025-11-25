@@ -2,36 +2,94 @@ import type { Metadata, Viewport } from 'next';
 import { GeistSans } from 'geist/font/sans';
 import { GeistMono } from 'geist/font/mono';
 import { Analytics } from '@vercel/analytics/next';
+import { StarsBackground } from '@/components/ui/stars-background';
+import { ShootingStars } from '@/components/ui/shooting-stars';
+import { LanguageProvider } from '@/lib/language-context';
 import './globals.css';
 
+const siteConfig = {
+  name: 'MiDika',
+  title: 'MiDika — Italian software house',
+  description:
+    'Italian software house focused on minimalism and design. We build clean, efficient, and maintainable software solutions.',
+  url: 'https://midika.it',
+};
+
 export const metadata: Metadata = {
-  metadataBase: new URL('https://midika.it'),
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: 'MiDika — Italian software house',
-    template: '%s — MiDika',
+    default: siteConfig.title,
+    template: `%s — ${siteConfig.name}`,
   },
-  description: 'Italian software house focused on minimalism and design.',
-  alternates: { canonical: '/' },
+  description: siteConfig.description,
+  keywords: [
+    'software house',
+    'web development',
+    'app development',
+    'Italy',
+    'Milan',
+    'minimalist design',
+    'custom software',
+  ],
+  authors: [
+    { name: 'Nicholas Sollazzo' },
+    { name: 'Martire Baldassarre' },
+    { name: 'Domenico Magaretti' },
+  ],
+  creator: siteConfig.name,
+  publisher: siteConfig.name,
+  formatDetection: {
+    email: false,
+    address: false,
+    telephone: false,
+  },
+  alternates: {
+    canonical: '/',
+    languages: {
+      'en-US': '/',
+      'it-IT': '/it',
+    },
+  },
   openGraph: {
     type: 'website',
-    url: 'https://midika.it/',
-    title: 'MiDika — Italian software house',
-    description: 'Italian software house focused on minimalism and design.',
-    images: [{ url: '/og.jpg', width: 1200, height: 630 }],
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: siteConfig.title,
+    description: siteConfig.description,
     locale: 'en_US',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'MiDika — Italian software house',
-    description: 'Italian software house focused on minimalism and design.',
-    images: ['/og.jpg'],
+    site: '@midaboratory',
+    creator: '@midaboratory',
+    title: siteConfig.title,
+    description: siteConfig.description,
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      'max-video-preview': -1,
+      'max-image-preview': 'large',
+      'max-snippet': -1,
+    },
+  },
+  // TODO: Add verification tokens when available
+  // verification: {
+  //   google: 'google-site-verification-token',
+  // },
 };
 
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  maximumScale: 1,
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#000000' },
+    { media: '(prefers-color-scheme: dark)', color: '#000000' },
+  ],
 };
 
 export default function RootLayout({
@@ -45,9 +103,31 @@ export default function RootLayout({
       className={`${GeistSans.variable} ${GeistMono.variable}`}
       suppressHydrationWarning
     >
-      <body className={`${GeistSans.className} antialiased`}>
-        {children}
-        <Analytics />
+      <body
+        className={`${GeistSans.className} antialiased bg-black text-white`}
+        suppressHydrationWarning
+      >
+        <LanguageProvider>
+          <div className="fixed inset-0 z-0 pointer-events-none">
+            <StarsBackground
+              starDensity={0.0015}
+              className="[mask-image:radial-gradient(circle_at_center,white,transparent_85%)]"
+            />
+            <ShootingStars
+              starColor="#f97316"
+              trailColor="#f97316"
+              minDelay={1000}
+              maxDelay={3000}
+              starHeight={4}
+              starWidth={30}
+            />
+            <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black/80 pointer-events-none" />
+          </div>
+          <div className="relative z-10 min-h-screen flex flex-col">
+            {children}
+            <Analytics />
+          </div>
+        </LanguageProvider>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -55,10 +135,38 @@ export default function RootLayout({
               '@context': 'https://schema.org',
               '@type': 'Organization',
               name: 'MiDika',
+              legalName: 'MIDIKA SRL',
               url: 'https://midika.it/',
-              logo: 'https://midika.it/logo.png',
+              logo: 'https://midika.it/icon.svg',
               description:
                 'Italian software house focused on minimalism and design.',
+              address: {
+                '@type': 'PostalAddress',
+                streetAddress: 'Via Giovanni Boccaccio 37',
+                addressLocality: 'Milano',
+                postalCode: '20123',
+                addressCountry: 'IT',
+              },
+              telephone: '+39 351 989 6805',
+              email: 'info@midika.it',
+              vatID: 'IT12042860960',
+              founder: [
+                {
+                  '@type': 'Person',
+                  name: 'Nicholas Sollazzo',
+                  jobTitle: 'CEO & Co-Founder',
+                },
+                {
+                  '@type': 'Person',
+                  name: 'Martire Baldassarre',
+                  jobTitle: 'CFO & Co-Founder',
+                },
+                {
+                  '@type': 'Person',
+                  name: 'Domenico Magaretti',
+                  jobTitle: 'CSO & Co-Founder',
+                },
+              ],
             }),
           }}
         />
