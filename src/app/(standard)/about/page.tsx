@@ -134,12 +134,6 @@ export default function AboutPage() {
         </p>
       </section>
 
-      <hr className="my-8 border-white/10" />
-
-      <p className="text-center text-sm font-medium tracking-wide text-white/50">
-        MIDIKA SRL — Minimalist software. Maximum impact.
-      </p>
-
       {/* AboutPage JSON-LD for AI crawlers */}
       <script
         type="application/ld+json"
