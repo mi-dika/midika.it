@@ -56,3 +56,4 @@ export function CopyButton({ text, className, size = 'md' }: CopyButtonProps) {
     </button>
   );
 }
+
