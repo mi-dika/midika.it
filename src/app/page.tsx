@@ -70,12 +70,20 @@ export default function Home() {
 
   // Randomize on client mount only (avoids SSR/client mismatch)
   useEffect(() => {
-    const shuffle = <T,>(arr: T[]) => [...arr].sort(() => Math.random() - 0.5);
-    setSuggestions(shuffle(SUGGESTED_QUESTIONS).slice(0, 3));
-    setPlaceholder(
-      INPUT_PLACEHOLDERS[Math.floor(Math.random() * INPUT_PLACEHOLDERS.length)]
-    );
-    setFollowUpQuestions(shuffle(FOLLOW_UP_QUESTIONS).slice(0, 3));
+    // Use setTimeout to avoid synchronous state updates during mount which can trigger cascading renders
+    const timer = setTimeout(() => {
+      const shuffle = <T,>(arr: T[]) =>
+        [...arr].sort(() => Math.random() - 0.5);
+      setSuggestions(shuffle(SUGGESTED_QUESTIONS).slice(0, 3));
+      setPlaceholder(
+        INPUT_PLACEHOLDERS[
+          Math.floor(Math.random() * INPUT_PLACEHOLDERS.length)
+        ]
+      );
+      setFollowUpQuestions(shuffle(FOLLOW_UP_QUESTIONS).slice(0, 3));
+    }, 0);
+
+    return () => clearTimeout(timer);
   }, []);
 
   // Regenerate follow-up questions when a new AI response arrives
@@ -84,9 +92,42 @@ export default function Home() {
       messages.length > 0 &&
       messages[messages.length - 1].role === 'assistant'
     ) {
-      const shuffle = <T,>(arr: T[]) =>
-        [...arr].sort(() => Math.random() - 0.5);
-      setFollowUpQuestions(shuffle(FOLLOW_UP_QUESTIONS).slice(0, 3));
+      const lastMessage = messages[messages.length - 1];
+
+      // Check if the last message has the suggestFollowUpQuestions tool invocation
+      const suggestionTool = lastMessage.parts?.find(
+        (part) =>
+          part.type === 'tool-invocation' &&
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (part as any).toolInvocation?.toolName ===
+            'suggestFollowUpQuestions' &&
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (part as any).toolInvocation?.state === 'result'
+      );
+
+      if (suggestionTool) {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        const toolInvocation = (suggestionTool as any).toolInvocation;
+        if (toolInvocation && 'result' in toolInvocation) {
+          // Use the suggestions from the tool
+          const suggestions = toolInvocation.result as string[];
+          if (Array.isArray(suggestions) && suggestions.length > 0) {
+            // Use setTimeout to avoid synchronous state updates during render
+            const timer = setTimeout(() => {
+              setFollowUpQuestions(suggestions);
+            }, 0);
+            return () => clearTimeout(timer);
+          }
+        }
+      }
+
+      // Fallback to random questions if no tool result found (or while loading)
+      const timer = setTimeout(() => {
+        const shuffle = <T,>(arr: T[]) =>
+          [...arr].sort(() => Math.random() - 0.5);
+        setFollowUpQuestions(shuffle(FOLLOW_UP_QUESTIONS).slice(0, 3));
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [messages]);
 

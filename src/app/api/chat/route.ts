@@ -21,7 +21,9 @@ You have access to tools that can fetch real-time company information. Use them 
 
 When relevant, include a link to https://midika.it/about for more details.
 
-Be helpful, concise, and professional. Keep responses brief and to the point. Format responses using markdown for better readability - use **bold**, *italics*, lists, and code blocks where appropriate.`;
+Be helpful, concise, and professional. Keep responses brief and to the point. Format responses using markdown for better readability - use **bold**, *italics*, lists, and code blocks where appropriate.
+
+IMPORTANT: After every response, you MUST use the \`suggestFollowUpQuestions\` tool to provide 3 relevant follow-up questions that the user might want to ask next.`;
 
 // Company information data
 const COMPANY_INFO = {
@@ -153,6 +155,16 @@ const tools = {
         second: '2-digit',
       });
       return `Current time in Milan: **${milanTime}**`;
+    },
+  }),
+  suggestFollowUpQuestions: tool({
+    description:
+      'Suggest 3 relevant follow-up questions based on the conversation context. ALWAYS call this tool at the end of your response.',
+    inputSchema: z.object({
+      questions: z.array(z.string()).describe('List of 3 follow-up questions'),
+    }),
+    execute: async ({ questions }) => {
+      return questions;
     },
   }),
 };

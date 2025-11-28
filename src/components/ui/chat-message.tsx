@@ -125,7 +125,11 @@ export function ChatMessage({
 
   // Find tool parts - look for parts that have toolName property
   const toolParts = message.parts.filter((part) => {
-    return 'toolName' in part && typeof part.toolName === 'string';
+    return (
+      'toolName' in part &&
+      typeof part.toolName === 'string' &&
+      part.toolName !== 'suggestFollowUpQuestions'
+    );
   });
 
   return (
