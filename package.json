@@ -21,7 +21,8 @@
     "format": "prettier --check .",
     "type-check": "tsc --noEmit",
     "test": "jest --passWithNoTests",
-    "test:watch": "jest --watch"
+    "test:watch": "jest --watch",
+    "validate": "pnpm test && pnpm check"
   },
   "dependencies": {
     "@ai-sdk/gateway": "^2.0.15",
