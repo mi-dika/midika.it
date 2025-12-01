@@ -22,6 +22,9 @@ const mockCanvasContext = {
   beginPath: jest.fn(),
   arc: jest.fn(),
   fill: jest.fn(),
+  moveTo: jest.fn(),
+  lineTo: jest.fn(),
+  stroke: jest.fn(),
 } as any;
 
 HTMLCanvasElement.prototype.getContext = jest.fn(() => mockCanvasContext);
