@@ -5,6 +5,9 @@ import { Analytics } from '@vercel/analytics/next';
 import { StarsBackground } from '@/components/ui/stars-background';
 import { ShootingStars } from '@/components/ui/shooting-stars';
 import { LanguageProvider } from '@/lib/language-context';
+import { ConsentProvider } from '@/components/consent/consent-provider';
+import { ConsentBanner } from '@/components/consent/consent-banner';
+import { ConsentGuard } from '@/components/consent/consent-guard';
 import './globals.css';
 
 const siteConfig = {
@@ -107,27 +110,32 @@ export default function RootLayout({
         className={`${GeistSans.className} antialiased bg-black text-white`}
         suppressHydrationWarning
       >
-        <LanguageProvider>
-          <div className="fixed inset-0 z-0 pointer-events-none">
-            <StarsBackground
-              starDensity={0.0015}
-              className="[mask-image:radial-gradient(circle_at_center,white,transparent_85%)]"
-            />
-            <ShootingStars
-              starColor="#f97316"
-              trailColor="#f97316"
-              minDelay={1000}
-              maxDelay={3000}
-              starHeight={4}
-              starWidth={30}
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black via-transparent to-black/80 pointer-events-none" />
-          </div>
-          <div className="relative z-10 min-h-screen flex flex-col">
-            {children}
-            <Analytics />
-          </div>
-        </LanguageProvider>
+        <ConsentProvider>
+          <LanguageProvider>
+            <div className="fixed inset-0 z-0 pointer-events-none">
+              <StarsBackground
+                starDensity={0.0015}
+                className="mask-[radial-gradient(circle_at_center,white,transparent_85%)]"
+              />
+              <ShootingStars
+                starColor="#f97316"
+                trailColor="#f97316"
+                minDelay={1000}
+                maxDelay={3000}
+                starHeight={4}
+                starWidth={30}
+              />
+              <div className="absolute inset-0 bg-linear-to-b from-black via-transparent to-black/80 pointer-events-none" />
+            </div>
+            <div className="relative z-10 min-h-screen flex flex-col">
+              {children}
+              <ConsentGuard>
+                <Analytics />
+              </ConsentGuard>
+            </div>
+            <ConsentBanner />
+          </LanguageProvider>
+        </ConsentProvider>
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
