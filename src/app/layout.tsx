@@ -103,7 +103,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${GeistSans.variable} ${GeistMono.variable}`}
+      className={`dark ${GeistSans.variable} ${GeistMono.variable}`}
       suppressHydrationWarning
     >
       <body
@@ -113,10 +113,7 @@ export default function RootLayout({
         <ConsentProvider>
           <LanguageProvider>
             <div className="fixed inset-0 z-0 pointer-events-none">
-              <StarsBackground
-                starDensity={0.0015}
-                className="mask-[radial-gradient(circle_at_center,white,transparent_85%)]"
-              />
+              <StarsBackground className="mask-[radial-gradient(circle_at_center,white,transparent_85%)]" />
               <ShootingStars
                 starColor="#f97316"
                 trailColor="#f97316"
