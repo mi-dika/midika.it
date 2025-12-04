@@ -29,8 +29,8 @@ interface ShootingStarsProps {
 export const ShootingStars: React.FC<ShootingStarsProps> = ({
   minSpeed = 10,
   maxSpeed = 30,
-  minDelay = 1200,
-  maxDelay = 4200,
+  minDelay = 2400,
+  maxDelay = 8400,
   starColor = '#9E00FF',
   trailColor = '#2EB9DF',
   starWidth = 20,
@@ -41,6 +41,10 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
   const [shouldAnimate, setShouldAnimate] = useState(true);
   const svgRef = useRef<SVGSVGElement>(null);
   const gradientId = useId();
+  const dimensionsRef = useRef<{ width: number; height: number }>({
+    width: 0,
+    height: 0,
+  });
 
   const [isVisible, setIsVisible] = useState(true);
 
@@ -69,30 +73,63 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
       document.removeEventListener('visibilitychange', handleVisibilityChange);
   }, []);
 
+  // Update dimensions on resize
+  useEffect(() => {
+    if (!svgRef.current) return;
+
+    const updateDimensions = () => {
+      if (svgRef.current) {
+        const rect = svgRef.current.getBoundingClientRect();
+        dimensionsRef.current = {
+          width: rect.width,
+          height: rect.height,
+        };
+      }
+    };
+
+    updateDimensions();
+
+    const resizeObserver = new ResizeObserver(updateDimensions);
+    if (svgRef.current) {
+      resizeObserver.observe(svgRef.current);
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
   useEffect(() => {
     if (!shouldAnimate || !isVisible) return;
 
     let timeoutId: ReturnType<typeof setTimeout>;
 
     const createStar = () => {
-      const { innerWidth, innerHeight } = window;
+      const { width, height } = dimensionsRef.current;
+
+      // Wait for dimensions to be available
+      if (width === 0 || height === 0) {
+        timeoutId = setTimeout(createStar, 100);
+        return;
+      }
+
       const angle = 45; // Fixed angle for corner-to-corner flow
 
       // Spawn logic: mostly from top-left
       // We want them to cover the screen, so we spawn them along the top and left edges
       // but slightly outside so they enter the screen smoothly.
 
-      const randomPos = Math.random() * (innerWidth + innerHeight);
+      const randomPos = Math.random() * (width + height);
       let x, y;
 
-      if (randomPos < innerWidth) {
+      if (randomPos < width) {
         // Spawn from top edge
-        x = Math.random() * innerWidth;
+        x = Math.random() * width;
         y = -50; // Start slightly above
       } else {
         // Spawn from left edge
         x = -50; // Start slightly left
-        y = Math.random() * innerHeight;
+        y = Math.random() * height;
       }
 
       const newStar: ShootingStar = {
@@ -103,7 +140,7 @@ export const ShootingStars: React.FC<ShootingStarsProps> = ({
         scale: 1,
         speed: Math.random() * (maxSpeed - minSpeed) + minSpeed,
         distance: 0,
-        maxDistance: Math.random() * (innerWidth + innerHeight) * 0.7 + 200, // Random distance
+        maxDistance: Math.random() * (width + height) * 0.7 + 200, // Random distance
         opacity: 0, // Start invisible and fade in
       };
       setStars((prev) => [...prev, newStar]);
