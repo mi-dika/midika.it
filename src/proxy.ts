@@ -2,6 +2,44 @@ import { NextRequest, NextResponse } from 'next/server';
 import { trackPageView } from '@/lib/analytics';
 
 /**
+ * Detect bot from user agent string
+ * Returns bot name if detected, undefined otherwise
+ * Applies KISS principle: simple pattern matching
+ */
+function detectBot(userAgent: string): string | undefined {
+  if (!userAgent) return undefined;
+
+  const ua = userAgent.toLowerCase();
+
+  // Common bot patterns
+  const botPatterns: Record<string, RegExp> = {
+    Googlebot: /googlebot/i,
+    Bingbot: /bingbot|msnbot/i,
+    GPTBot: /gptbot/i,
+    ClaudeBot: /claude/i,
+    Applebot: /applebot/i,
+    DuckDuckBot: /duckduckbot/i,
+    YandexBot: /yandexbot/i,
+    Slurp: /slurp/i,
+    facebookexternalhit: /facebookexternalhit/i,
+    Twitterbot: /twitterbot/i,
+    LinkedInBot: /linkedinbot/i,
+    WhatsApp: /whatsapp/i,
+    TelegramBot: /telegrambot/i,
+    Baiduspider: /baiduspider/i,
+    Sogou: /sogou/i,
+  };
+
+  for (const [botName, pattern] of Object.entries(botPatterns)) {
+    if (pattern.test(ua)) {
+      return botName;
+    }
+  }
+
+  return undefined;
+}
+
+/**
  * Next.js 16 Proxy - Server-side analytics tracking
  * Applies KISS principle: simple request interception
  * Applies DRY principle: reuses trackPageView function
@@ -22,9 +60,11 @@ export default async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const country = request.headers.get('x-vercel-ip-country') || 'unknown';
   const referrer = request.headers.get('referer') || '';
+  const userAgent = request.headers.get('user-agent') || '';
+  const botName = detectBot(userAgent);
 
   // Fire-and-forget tracking (don't block the response)
-  trackPageView({ path, country, referrer }).catch(() => {});
+  trackPageView({ path, country, referrer, botName }).catch(() => {});
 
   return NextResponse.next();
 }
