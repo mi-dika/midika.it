@@ -59,9 +59,25 @@ export default async function proxy(request: NextRequest) {
 
   const path = request.nextUrl.pathname;
   const country = request.headers.get('x-vercel-ip-country') || 'unknown';
-  const referrer = request.headers.get('referer') || '';
+  const rawReferrer = request.headers.get('referer') || '';
   const userAgent = request.headers.get('user-agent') || '';
   const botName = detectBot(userAgent);
+
+  // Filter out self-referrals (KISS: simple domain comparison)
+  let referrer = '';
+  if (rawReferrer) {
+    try {
+      const refUrl = new URL(rawReferrer);
+      const refHost = refUrl.hostname.replace(/^www\./, '');
+      const currentHost = host.replace(/^www\./, '');
+      // Only count external referrers
+      if (refHost !== currentHost) {
+        referrer = rawReferrer;
+      }
+    } catch {
+      // Invalid URL, skip referrer
+    }
+  }
 
   // Fire-and-forget tracking (don't block the response)
   trackPageView({ path, country, referrer, botName }).catch(() => {});
