@@ -13,15 +13,18 @@ import { trackPageView } from '@/lib/analytics';
  * - Aggregate data only
  */
 export default async function proxy(request: NextRequest) {
+  // Skip tracking in development (localhost)
+  const host = request.headers.get('host') || '';
+  if (host.includes('localhost') || host.includes('127.0.0.1')) {
+    return NextResponse.next();
+  }
+
   const path = request.nextUrl.pathname;
   const country = request.headers.get('x-vercel-ip-country') || 'unknown';
   const referrer = request.headers.get('referer') || '';
 
   // Fire-and-forget tracking (don't block the response)
-  // Track asynchronously without awaiting
-  trackPageView({ path, country, referrer }).catch(() => {
-    // Silently fail - analytics should never break the app
-  });
+  trackPageView({ path, country, referrer }).catch(() => {});
 
   return NextResponse.next();
 }

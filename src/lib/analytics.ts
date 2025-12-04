@@ -44,12 +44,8 @@ export async function trackPageView(data: PageViewData): Promise<void> {
   try {
     const key = generateDateKey(data.path, data.country);
     await kv.incr(key);
-  } catch (error) {
+  } catch {
     // Fail silently - analytics should never break the app
-    // Log only in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Failed to track pageview:', error);
-    }
   }
 }
 
@@ -118,11 +114,8 @@ export async function getPageViews(
     });
 
     return { totalViews, byCountry };
-  } catch (error) {
+  } catch {
     // Fail gracefully - return empty stats
-    if (process.env.NODE_ENV === 'development') {
-      console.error('Failed to get pageviews:', error);
-    }
     return { totalViews: 0, byCountry: {} };
   }
 }

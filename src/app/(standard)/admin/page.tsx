@@ -5,6 +5,21 @@ import { getPageViews } from '@/lib/analytics';
 import type { Metadata } from 'next';
 import { LogOut, BarChart3, Globe, TrendingUp } from 'lucide-react';
 
+/**
+ * Convert ISO 3166-1 alpha-2 country code to flag emoji
+ * KISS: Simple regional indicator conversion
+ */
+function countryToFlag(countryCode: string): string {
+  if (countryCode === 'unknown' || countryCode.length !== 2) {
+    return '🌍';
+  }
+  const codePoints = countryCode
+    .toUpperCase()
+    .split('')
+    .map((char) => 127397 + char.charCodeAt(0));
+  return String.fromCodePoint(...codePoints);
+}
+
 export const metadata: Metadata = {
   title: 'Analytics Dashboard',
   description: 'Website analytics dashboard',
@@ -98,7 +113,9 @@ export default async function AnalyticsPage() {
             <span className="text-sm font-medium">Top Country</span>
           </div>
           <p className="text-3xl font-bold text-white">
-            {topCountries[0]?.[0] || 'N/A'}
+            {topCountries[0]
+              ? `${countryToFlag(topCountries[0][0])} ${topCountries[0][0]}`
+              : 'N/A'}
           </p>
         </div>
       </div>
@@ -113,7 +130,10 @@ export default async function AnalyticsPage() {
                 key={country}
                 className="flex items-center justify-between rounded-lg border border-white/5 bg-white/5 px-4 py-3"
               >
-                <span className="font-medium text-white">{country}</span>
+                <span className="flex items-center gap-3 font-medium text-white">
+                  <span className="text-2xl">{countryToFlag(country)}</span>
+                  {country}
+                </span>
                 <span className="text-white/60">
                   {typeof views === 'number' ? views.toLocaleString() : views}{' '}
                   views
