@@ -36,7 +36,7 @@ export const metadata: Metadata = {
   ],
   authors: [
     { name: 'Nicholas Sollazzo' },
-    { name: 'Martire Baldassarre' },
+    { name: 'Baldassarre Martire' },
     { name: 'Domenico Magaretti' },
   ],
   creator: siteConfig.name,
@@ -164,7 +164,7 @@ export default function RootLayout({
                 },
                 {
                   '@type': 'Person',
-                  name: 'Martire Baldassarre',
+                  name: 'Baldassarre Martire',
                   jobTitle: 'CFO & Co-Founder',
                 },
                 {

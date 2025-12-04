@@ -65,7 +65,7 @@ export default function AboutPage() {
             CEO &amp; Co-Founder
           </li>
           <li>
-            <span className="font-medium text-white">Martire Baldassarre</span>{' '}
+            <span className="font-medium text-white">Baldassarre Martire</span>{' '}
             — CFO &amp; Co-Founder
           </li>
           <li>

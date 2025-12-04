@@ -29,7 +29,7 @@ const FAQS = [
     questions: [
       {
         q: 'Who is MiDika?',
-        a: 'MiDika is an Italian software house based in Milan, founded on October 7, 2021 by Nicholas Sollazzo, Martire Baldassarre, and Domenico Magaretti. We are focused on minimalism, design, and engineering excellence.',
+        a: 'MiDika is an Italian software house based in Milan, founded on October 7, 2021 by Nicholas Sollazzo, Baldassarre Martire, and Domenico Magaretti. We are focused on minimalism, design, and engineering excellence.',
       },
       {
         q: 'What is your design philosophy?',
