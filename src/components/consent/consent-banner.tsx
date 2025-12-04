@@ -44,13 +44,13 @@ export function ConsentBanner() {
         >
           <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-black/80 p-6 backdrop-blur-xl shadow-2xl">
             {/* Decorative gradient blob */}
-            <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-orange-500/20 blur-3xl pointer-events-none" />
+            <div className="absolute -top-20 -right-20 h-40 w-40 rounded-full bg-primary/20 blur-3xl pointer-events-none" />
 
             <div className="relative z-10 flex flex-col gap-4">
               <div className="flex items-start justify-between gap-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white/5 border border-white/10">
-                    <ShieldCheck className="h-5 w-5 text-orange-500" />
+                    <ShieldCheck className="h-5 w-5 text-primary" />
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-white">
@@ -80,7 +80,7 @@ export function ConsentBanner() {
                     </button>
                     <button
                       onClick={acceptConsent}
-                      className="rounded-lg bg-orange-500 px-4 py-2.5 text-xs font-medium text-white hover:bg-orange-600 transition-colors shadow-[0_0_20px_-5px_rgba(249,115,22,0.5)]"
+                      className="rounded-lg bg-primary px-4 py-2.5 text-xs font-medium text-white hover:bg-primary/90 transition-colors shadow-[0_0_20px_-5px_theme(colors.primary/0.5)]"
                     >
                       Accept All
                     </button>
@@ -104,8 +104,8 @@ export function ConsentBanner() {
                           Required for the site to work
                         </span>
                       </div>
-                      <div className="h-4 w-4 rounded border border-orange-500/50 bg-orange-500/20 flex items-center justify-center">
-                        <div className="h-2 w-2 rounded-sm bg-orange-500" />
+                      <div className="h-4 w-4 rounded border border-primary/50 bg-primary/20 flex items-center justify-center">
+                        <div className="h-2 w-2 rounded-sm bg-primary" />
                       </div>
                     </div>
                     <div
@@ -126,7 +126,7 @@ export function ConsentBanner() {
                         </span>
                       </div>
                       <div
-                        className={`h-4 w-4 rounded border flex items-center justify-center transition-colors ${preferences.analytics ? 'border-orange-500 bg-orange-500' : 'border-zinc-700 bg-transparent'}`}
+                        className={`h-4 w-4 rounded border flex items-center justify-center transition-colors ${preferences.analytics ? 'border-primary bg-primary' : 'border-zinc-700 bg-transparent'}`}
                       >
                         {preferences.analytics && (
                           <div className="h-2 w-2 rounded-sm bg-white" />

@@ -113,7 +113,7 @@ export default function AboutPage() {
             Email:{' '}
             <a
               href="mailto:info@midika.it"
-              className="text-orange-500 hover:underline"
+              className="text-primary hover:underline"
             >
               info@midika.it
             </a>
@@ -122,7 +122,7 @@ export default function AboutPage() {
             Website:{' '}
             <a
               href="https://midika.it/"
-              className="text-orange-500 hover:underline"
+              className="text-primary hover:underline"
             >
               https://midika.it/
             </a>

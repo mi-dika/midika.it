@@ -93,7 +93,7 @@ function ToolCard({ toolName, state, output }: ToolCardProps) {
   return (
     <div className="my-2 overflow-hidden rounded-lg border border-white/10 bg-white/5">
       <div className="flex items-center gap-2 border-b border-white/10 bg-white/5 px-3 py-2">
-        <span className="text-orange-400">{getToolIcon()}</span>
+        <span className="text-primary">{getToolIcon()}</span>
         <span className="text-xs font-medium text-white/70">
           {getToolLabel()}
         </span>
@@ -143,9 +143,7 @@ export function ChatMessage({
       <div
         className={cn(
           'flex h-8 w-8 shrink-0 items-center justify-center rounded-full',
-          isUser
-            ? 'bg-orange-500/20 text-orange-400'
-            : 'bg-white/10 text-white/70'
+          isUser ? 'bg-primary/20 text-primary' : 'bg-white/10 text-white/70'
         )}
       >
         {isUser ? (
@@ -160,7 +158,7 @@ export function ChatMessage({
         className={cn(
           'relative max-w-[80%] rounded-2xl px-4 py-3',
           isUser
-            ? 'bg-orange-500/20 text-white'
+            ? 'bg-primary/20 text-white'
             : 'bg-white/5 text-white/90 backdrop-blur-sm'
         )}
       >
@@ -195,7 +193,7 @@ export function ChatMessage({
                 <Markdown content={text} />
                 {/* Typing cursor */}
                 {isStreaming && isLastMessage && (
-                  <span className="ml-1 inline-block h-2 w-2 rounded-full animate-pulse bg-orange-500" />
+                  <span className="ml-1 inline-block h-2 w-2 rounded-full animate-pulse bg-primary" />
                 )}
               </div>
             )}

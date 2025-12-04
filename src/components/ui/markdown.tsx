@@ -45,7 +45,7 @@ export function Markdown({ content }: MarkdownProps) {
       const isInline = !className;
       if (isInline) {
         return (
-          <code className="rounded bg-white/10 px-1.5 py-0.5 text-orange-400">
+          <code className="rounded bg-white/10 px-1.5 py-0.5 text-primary">
             {children}
           </code>
         );
@@ -59,7 +59,7 @@ export function Markdown({ content }: MarkdownProps) {
           href={href}
           target="_blank"
           rel="noopener noreferrer"
-          className="text-orange-400 underline decoration-orange-400/30 underline-offset-2 transition-colors hover:text-orange-300 hover:decoration-orange-300/50"
+          className="text-primary underline decoration-primary/30 underline-offset-2 transition-colors hover:text-primary/80 hover:decoration-primary/50"
         >
           {children}
         </a>
@@ -92,7 +92,7 @@ export function Markdown({ content }: MarkdownProps) {
     // Blockquotes
     blockquote({ children }) {
       return (
-        <blockquote className="mb-3 border-l-2 border-orange-500/50 pl-3 italic text-white/70">
+        <blockquote className="mb-3 border-l-2 border-primary/50 pl-3 italic text-white/70">
           {children}
         </blockquote>
       );

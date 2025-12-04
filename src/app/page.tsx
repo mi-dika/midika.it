@@ -167,7 +167,7 @@ export default function Home() {
   return (
     <div className="flex flex-col w-full">
       {/* Hero Section - Full Screen */}
-      <section className="relative flex min-h-screen w-full flex-col items-center justify-between p-4 md:p-8 pointer-events-none">
+      <section className="relative flex min-h-screen w-full flex-col items-center justify-between p-4 md:p-8 pointer-events-none overflow-hidden">
         {/* Center Logo or Chat */}
         <div className="flex flex-1 flex-col items-center justify-center pointer-events-auto w-full max-w-2xl">
           {messages.length === 0 ? (
@@ -182,7 +182,7 @@ export default function Home() {
                   <button
                     key={suggestion}
                     onClick={() => handleSuggestionClick(suggestion)}
-                    className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm text-white/60 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-white"
+                    className="rounded-full border border-white/10 bg-black/40 backdrop-blur-sm px-4 py-2 text-sm text-white/70 transition-all hover:border-primary/50 hover:bg-black/60 hover:backdrop-blur-md hover:text-white"
                   >
                     {suggestion}
                   </button>
@@ -222,7 +222,7 @@ export default function Home() {
                         <button
                           key={question}
                           onClick={() => handleSuggestionClick(question)}
-                          className="rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/50 transition-all hover:border-orange-500/30 hover:bg-orange-500/10 hover:text-white"
+                          className="rounded-full border border-white/10 bg-black/40 backdrop-blur-sm px-3 py-1.5 text-xs text-white/60 transition-all hover:border-primary/50 hover:bg-black/60 hover:backdrop-blur-md hover:text-white"
                         >
                           {question}
                         </button>
@@ -254,13 +254,13 @@ export default function Home() {
               value={input}
               onChange={(e) => setInput(e.target.value)}
               placeholder={placeholder}
-              className="w-full rounded-2xl border border-white/10 bg-white/5 px-6 py-4 pr-12 text-white backdrop-blur-sm transition-all placeholder:text-white/30 focus:border-orange-500/30 focus:bg-white/10 focus:outline-none focus:ring-1 focus:ring-orange-500/20"
+              className="w-full rounded-2xl border border-white/10 bg-black/40 px-6 py-4 pr-12 text-white backdrop-blur-sm transition-all placeholder:text-white/40 focus:border-primary/50 focus:bg-black/60 focus:backdrop-blur-md focus:outline-none focus:ring-1 focus:ring-primary/30"
               disabled={isLoading}
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-white/10 p-2 text-white/50 transition-all hover:bg-orange-500/20 hover:text-orange-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/10 disabled:hover:text-white/50"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-xl bg-white/10 p-2 text-white/50 transition-all hover:bg-primary/20 hover:text-primary disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-white/10 disabled:hover:text-white/50"
             >
               {isLoading ? (
                 <Loader2 className="h-5 w-5 animate-spin" />
@@ -282,7 +282,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto px-4 flex flex-col items-center justify-between gap-4 md:flex-row">
           <span className="text-xs text-white/40">
             © {new Date().getFullYear()} MiDika. {t('footerText')}{' '}
-            <span className="text-orange-500">♥</span> in Italy.
+            <span className="text-primary">♥</span> in Italy.
           </span>
           <div className="flex gap-6 text-xs text-white/40">
             <a href="#" className="hover:text-white transition-colors">
