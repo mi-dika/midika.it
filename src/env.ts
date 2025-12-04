@@ -6,7 +6,7 @@ const envSchema = z.object({
   IUBENDA_PRIVATE_API_KEY: z.string().optional(),
   KV_REST_API_URL: z.string().optional(),
   KV_REST_API_TOKEN: z.string().optional(),
-  ANALYTICS_SECRET: z.string().optional(),
+  ADMIN_PASSWORD: z.string().optional(),
 });
 
 export const env = envSchema.parse({
@@ -17,5 +17,5 @@ export const env = envSchema.parse({
   IUBENDA_PRIVATE_API_KEY: process.env.IUBENDA_PRIVATE_API_KEY,
   KV_REST_API_URL: process.env.KV_REST_API_URL,
   KV_REST_API_TOKEN: process.env.KV_REST_API_TOKEN,
-  ANALYTICS_SECRET: process.env.ANALYTICS_SECRET,
+  ADMIN_PASSWORD: process.env.ADMIN_PASSWORD,
 });

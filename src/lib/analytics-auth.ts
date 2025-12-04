@@ -12,7 +12,7 @@ const SESSION_EXPIRY_MS = 7 * 24 * 60 * 60 * 1000;
  * Applies KISS principle: simple password check
  */
 export function verifyPassword(password: string): boolean {
-  const secret = env.ANALYTICS_SECRET;
+  const secret = env.ADMIN_PASSWORD;
   if (!secret) {
     return false;
   }
@@ -44,7 +44,7 @@ export function createSession(): string {
   const data = `${timestamp}:${random}`;
 
   // Sign the session token with HMAC
-  const secret = env.ANALYTICS_SECRET || 'fallback-secret';
+  const secret = env.ADMIN_PASSWORD || 'fallback-secret';
   const hmac = createHmac('sha256', secret);
   hmac.update(data);
   const signature = hmac.digest('base64url');
@@ -78,7 +78,7 @@ export function verifySession(sessionToken: string): boolean {
   }
 
   const data = `${timestamp}:${random}`;
-  const secret = env.ANALYTICS_SECRET || 'fallback-secret';
+  const secret = env.ADMIN_PASSWORD || 'fallback-secret';
 
   const hmac = createHmac('sha256', secret);
   hmac.update(data);

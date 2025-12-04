@@ -8,7 +8,7 @@ import {
 // Mock env module
 jest.mock('../env', () => ({
   env: {
-    ANALYTICS_SECRET: 'test-secret-password',
+    ADMIN_PASSWORD: 'test-secret-password',
   },
 }));
 
