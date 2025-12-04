@@ -38,7 +38,7 @@ function notifyConsentStorageListeners() {
 
 export function ConsentProvider({ children }: { children: React.ReactNode }) {
   // Use useSyncExternalStore to sync with localStorage (React 18+ recommended pattern)
-  const consentStatus = useSyncExternalStore(
+  const consentStatus: ConsentStatus = useSyncExternalStore(
     subscribeToConsentStorage,
     getConsentStatusFromStorage,
     () => 'unknown' // Server snapshot - always 'unknown' to avoid hydration mismatch
