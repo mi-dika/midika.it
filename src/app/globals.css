@@ -173,3 +173,138 @@
 .hljs-meta {
   color: #79c0ff;
 }
+
+/* Iubenda Policy Styles */
+.iubenda-policy {
+  /* Links */
+  & a {
+    color: var(--primary);
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+
+  /* Headings */
+  & h1 {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: white;
+    margin-bottom: 1rem;
+  }
+
+  & h2 {
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: white;
+  }
+
+  & h3 {
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+    font-size: 1.125rem;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.9);
+  }
+
+  /* Paragraphs */
+  & p {
+    margin-bottom: 1rem;
+    line-height: 1.75;
+    color: rgba(255, 255, 255, 0.7);
+  }
+
+  & strong {
+    color: white;
+    font-weight: 600;
+  }
+
+  /* Iubenda layout containers - remove list styling */
+  & .for_boxes,
+  & .one_line_col,
+  & .unstyled {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+  }
+
+  & .for_boxes {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  & .unstyled {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  /* Service blocks with left border accent */
+  & .iconed {
+    border-left: 2px solid rgba(249, 115, 22, 0.3);
+    padding-left: 1rem;
+    padding-top: 0.5rem;
+    padding-bottom: 0.5rem;
+  }
+
+  /* Header and sections - hide Iubenda's h1 since we show our own */
+  & .iub_header h1 {
+    display: none;
+  }
+
+  & .iub_header {
+    margin-bottom: 2rem;
+  }
+
+  & .simple_pp {
+    margin-bottom: 3rem;
+  }
+
+  /* Actual content lists (not layout) */
+  & ol {
+    list-style: decimal;
+    list-style-position: inside;
+    margin-left: 0;
+    color: rgba(255, 255, 255, 0.7);
+
+    & li {
+      margin-bottom: 0.5rem;
+    }
+  }
+
+  /* Remove default ul bullets globally, add back for actual content */
+  & ul:not(.for_boxes):not(.unstyled) {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  /* Definition boxes */
+  & .definitions {
+    & h3 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+  }
+
+  /* Hide Iubenda's icon placeholders since we don't load their CSS */
+  & [class*='policyicon_'] {
+    display: block;
+  }
+
+  /* Box layout fixes */
+  & .box_primary,
+  & .box_10 {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin: 1rem 0;
+  }
+
+  /* Expand/collapse sections */
+  & .expand-content {
+    margin-top: 1rem;
+  }
+}
