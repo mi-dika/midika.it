@@ -30,7 +30,7 @@ const translations = {
     visualSection: 'Understanding The Digital Universe',
     footerText: 'Made with',
     privacy: 'Privacy',
-    terms: 'Terms',
+    cookiePolicy: 'Cookie Policy',
   },
   it: {
     manifesto: 'Manifesto',
@@ -51,7 +51,7 @@ const translations = {
     visualSection: "Comprendere L'Universo Digitale",
     footerText: 'Fatto con',
     privacy: 'Privacy',
-    terms: 'Termini',
+    cookiePolicy: 'Cookie Policy',
   },
 };
 

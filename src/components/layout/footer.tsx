@@ -3,7 +3,7 @@
 import { useLanguage } from '@/lib/language-context';
 
 export function Footer() {
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
 
   return (
     <footer className="w-full border-t border-white/10 py-6 bg-black/50 backdrop-blur-sm">
@@ -13,11 +13,17 @@ export function Footer() {
           <span className="text-primary">♥</span> in Italy.
         </span>
         <div className="flex gap-6 text-xs text-white/40">
-          <a href="#" className="hover:text-white transition-colors">
+          <a
+            href={`/privacy?lang=${language}`}
+            className="hover:text-white transition-colors"
+          >
             {t('privacy')}
           </a>
-          <a href="#" className="hover:text-white transition-colors">
-            {t('terms')}
+          <a
+            href={`/cookie-policy?lang=${language}`}
+            className="hover:text-white transition-colors"
+          >
+            {t('cookiePolicy')}
           </a>
         </div>
       </div>
