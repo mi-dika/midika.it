@@ -145,6 +145,7 @@ export default function RootLayout({
               logo: 'https://midika.it/icon.svg',
               description:
                 'Italian software house focused on minimalism and design.',
+              foundingDate: '2021-10-07',
               address: {
                 '@type': 'PostalAddress',
                 streetAddress: 'Via Giovanni Boccaccio 37',

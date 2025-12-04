@@ -25,16 +25,16 @@ export default function AboutPage() {
       <section className="mb-12">
         <h2 className="mb-4 text-2xl font-semibold text-white">Who We Are</h2>
         <p className="leading-relaxed text-white/70">
-          Founded and led by Nicholas Sollazzo (CEO &amp; Co-Founder), MIDIKA
-          SRL brings together a diverse team of professionals passionate about
-          technology, design, and innovation. Our core values are rooted in
-          simplicity, efficiency, and a relentless pursuit of quality. We
-          believe in the principles of KISS (Keep It Simple Stupid), DRY
-          (Don&apos;t Repeat Yourself), and YAGNI (You Aren&apos;t Gonna Need
-          It), ensuring our work remains focused and effective. Test-driven
-          development (TDD) is a cornerstone of our engineering culture,
-          guaranteeing reliability and maintainability in every project we
-          deliver.
+          Founded on October 7, 2021 and led by Nicholas Sollazzo (CEO &amp;
+          Co-Founder), MIDIKA SRL brings together a diverse team of
+          professionals passionate about technology, design, and innovation. Our
+          core values are rooted in simplicity, efficiency, and a relentless
+          pursuit of quality. We believe in the principles of KISS (Keep It
+          Simple Stupid), DRY (Don&apos;t Repeat Yourself), and YAGNI (You
+          Aren&apos;t Gonna Need It), ensuring our work remains focused and
+          effective. Test-driven development (TDD) is a cornerstone of our
+          engineering culture, guaranteeing reliability and maintainability in
+          every project we deliver.
         </p>
       </section>
 
