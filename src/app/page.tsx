@@ -2,6 +2,7 @@
 
 import { GlowingText } from '@/components/ui/glowing-text';
 import { ChatMessage } from '@/components/ui/chat-message';
+import { ToastContainer, type ToastLevel } from '@/components/ui/toast';
 import { ArrowRight, Loader2, Square, X } from 'lucide-react';
 import { useLanguage } from '@/lib/language-context';
 import { useChat } from '@ai-sdk/react';
@@ -32,26 +33,88 @@ const INPUT_PLACEHOLDERS = [
   'How can we help you today?',
 ];
 
-// Pool of follow-up questions to suggest after AI responses
-const FOLLOW_UP_QUESTIONS = [
-  'Can you tell me more about your pricing?',
-  'What is your development process?',
-  'How long does a typical project take?',
-  'Do you offer ongoing support?',
-  'Can I see some examples of your work?',
-  'What technologies do you specialize in?',
-  'How do I get started with a project?',
-  'Do you work with international clients?',
-  'What makes your approach unique?',
-  'Can you help with an existing project?',
-];
+// Follow-up questions are now AI-generated - no fallbacks
+
+interface Toast {
+  id: string;
+  message: string;
+  level?: ToastLevel;
+}
 
 export default function Home() {
   const { t, language } = useLanguage();
+  const [toasts, setToasts] = useState<Toast[]>([]);
+  const [transientStatus, setTransientStatus] = useState<string | null>(null);
+  const [completionGlow, setCompletionGlow] = useState(false);
+  const transientStatusTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const { messages, setMessages, sendMessage, status, stop } = useChat({
     transport: new DefaultChatTransport({
       api: '/api/chat',
     }),
+    experimental_throttle: 50, // Reduce re-renders during streaming
+    onData: ({ data, type }) => {
+      console.log('[onData]', { type, data }); // DEBUG
+
+      // Handle data notifications
+      if (type === 'data-notification' && data) {
+        const payload = data as {
+          type?: string;
+          message?: string;
+          level?: ToastLevel;
+          questions?: string[];
+        };
+
+        // Check if it's a follow-up questions payload
+        if (payload.type === 'followup' && payload.questions) {
+          if (
+            Array.isArray(payload.questions) &&
+            payload.questions.length > 0
+          ) {
+            setFollowUpQuestions(payload.questions);
+          }
+          return;
+        }
+
+        // Handle transient status notifications
+        if (payload.message) {
+          // Cancel any existing timeout before setting a new one
+          if (transientStatusTimeoutRef.current) {
+            clearTimeout(transientStatusTimeoutRef.current);
+            transientStatusTimeoutRef.current = null;
+          }
+
+          setTransientStatus(payload.message);
+          // Auto-clear after 2 seconds unless it's a completion message
+          const timeoutDuration = payload.level !== 'success' ? 2000 : 1000;
+          transientStatusTimeoutRef.current = setTimeout(() => {
+            setTransientStatus(null);
+            transientStatusTimeoutRef.current = null;
+          }, timeoutDuration);
+        }
+      }
+    },
+    onFinish: () => {
+      // Trigger subtle completion animation
+      setCompletionGlow(true);
+      setTimeout(() => setCompletionGlow(false), 1000);
+    },
+    onError: (error) => {
+      // Show error toast
+      const toastId = `error-${Date.now()}`;
+      setToasts((prev) => [
+        ...prev,
+        {
+          id: toastId,
+          message: t('errorOccurred'),
+          level: 'error',
+        },
+      ]);
+      // Auto-remove after duration
+      setTimeout(() => {
+        setToasts((prev) => prev.filter((t) => t.id !== toastId));
+      }, 5000);
+    },
   });
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -64,9 +127,7 @@ export default function Home() {
     SUGGESTED_QUESTIONS.slice(0, 3)
   );
   const [placeholder, setPlaceholder] = useState(INPUT_PLACEHOLDERS[0]);
-  const [followUpQuestions, setFollowUpQuestions] = useState(
-    FOLLOW_UP_QUESTIONS.slice(0, 3)
-  );
+  const [followUpQuestions, setFollowUpQuestions] = useState<string[]>([]);
 
   // Randomize on client mount only (avoids SSR/client mismatch)
   useEffect(() => {
@@ -80,56 +141,13 @@ export default function Home() {
           Math.floor(Math.random() * INPUT_PLACEHOLDERS.length)
         ]
       );
-      setFollowUpQuestions(shuffle(FOLLOW_UP_QUESTIONS).slice(0, 3));
     }, 0);
 
     return () => clearTimeout(timer);
   }, []);
 
-  // Regenerate follow-up questions when a new AI response arrives
-  useEffect(() => {
-    if (
-      messages.length > 0 &&
-      messages[messages.length - 1].role === 'assistant'
-    ) {
-      const lastMessage = messages[messages.length - 1];
-
-      // Check if the last message has the suggestFollowUpQuestions tool invocation
-      const suggestionTool = lastMessage.parts?.find(
-        (part) =>
-          part.type === 'tool-invocation' &&
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (part as any).toolInvocation?.toolName ===
-            'suggestFollowUpQuestions' &&
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (part as any).toolInvocation?.state === 'result'
-      );
-
-      if (suggestionTool) {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const toolInvocation = (suggestionTool as any).toolInvocation;
-        if (toolInvocation && 'result' in toolInvocation) {
-          // Use the suggestions from the tool
-          const suggestions = toolInvocation.result as string[];
-          if (Array.isArray(suggestions) && suggestions.length > 0) {
-            // Use setTimeout to avoid synchronous state updates during render
-            const timer = setTimeout(() => {
-              setFollowUpQuestions(suggestions);
-            }, 0);
-            return () => clearTimeout(timer);
-          }
-        }
-      }
-
-      // Fallback to random questions if no tool result found (or while loading)
-      const timer = setTimeout(() => {
-        const shuffle = <T,>(arr: T[]) =>
-          [...arr].sort(() => Math.random() - 0.5);
-        setFollowUpQuestions(shuffle(FOLLOW_UP_QUESTIONS).slice(0, 3));
-      }, 0);
-      return () => clearTimeout(timer);
-    }
-  }, [messages]);
+  // Follow-up questions are now received via onData callback (parallel generation)
+  // No need for a separate effect - they arrive with the stream
 
   // Auto-scroll to bottom when messages change
   useEffect(() => {
@@ -140,6 +158,15 @@ export default function Home() {
       });
     }
   }, [messages]);
+
+  // Cleanup timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (transientStatusTimeoutRef.current) {
+        clearTimeout(transientStatusTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -164,8 +191,15 @@ export default function Home() {
     stop();
   };
 
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
   return (
     <div className="flex flex-col w-full">
+      {/* Toast Container */}
+      <ToastContainer toasts={toasts} onRemove={removeToast} />
+
       {/* Hero Section - Full Screen */}
       <section className="relative flex min-h-screen w-full flex-col items-center justify-between p-4 md:p-8 pointer-events-none overflow-hidden">
         {/* Center Logo or Chat */}
@@ -190,7 +224,7 @@ export default function Home() {
               </div>
             </>
           ) : (
-            <div className="w-full flex-1 flex flex-col max-h-[60vh]">
+            <div className="w-full flex-1 flex flex-col max-h-[calc(100vh-180px)]">
               {/* Close chat button */}
               <div className="flex justify-end px-4 pb-2">
                 <button
@@ -198,7 +232,7 @@ export default function Home() {
                   className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/5 px-3 py-1.5 text-xs text-white/50 transition-all hover:border-white/20 hover:bg-white/10 hover:text-white/70"
                 >
                   <X className="h-3 w-3" />
-                  Close chat
+                  {t('closeChat')}
                 </button>
               </div>
               <div
@@ -211,6 +245,9 @@ export default function Home() {
                     message={message}
                     isStreaming={status === 'streaming'}
                     isLastMessage={index === messages.length - 1}
+                    statusMessage={
+                      index === messages.length - 1 ? transientStatus : null
+                    }
                   />
                 ))}
                 {/* Follow-up suggestions after AI response */}
@@ -244,11 +281,18 @@ export default function Home() {
               className="flex items-center gap-2 rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm text-white/70 transition-all hover:border-red-500/30 hover:bg-red-500/10 hover:text-red-400"
             >
               <Square className="h-3 w-3 fill-current" />
-              Stop generating
+              {t('stopGenerating')}
             </button>
           )}
 
-          <form onSubmit={handleSubmit} className="relative w-full max-w-md">
+          <form
+            onSubmit={handleSubmit}
+            className={`relative w-full max-w-md transition-all duration-1000 ${
+              completionGlow
+                ? 'ring-2 ring-primary/50 ring-offset-2 ring-offset-black'
+                : ''
+            }`}
+          >
             <input
               type="text"
               value={input}
@@ -277,29 +321,31 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="w-full border-t border-white/10 py-6 bg-black/50 backdrop-blur-sm pointer-events-auto">
-        <div className="max-w-6xl mx-auto px-4 flex flex-col items-center justify-between gap-4 md:flex-row">
-          <span className="text-xs text-white/40">
-            © {new Date().getFullYear()} MiDika. {t('footerText')}{' '}
-            <span className="text-primary">♥</span> in Italy.
-          </span>
-          <div className="flex gap-6 text-xs text-white/40">
-            <a
-              href={`/privacy?lang=${language}`}
-              className="hover:text-white transition-colors"
-            >
-              {t('privacy')}
-            </a>
-            <a
-              href={`/cookie-policy?lang=${language}`}
-              className="hover:text-white transition-colors"
-            >
-              {t('cookiePolicy')}
-            </a>
+      {/* Footer - hidden when chat is active */}
+      {messages.length === 0 && (
+        <footer className="w-full border-t border-white/10 py-6 bg-black/50 backdrop-blur-sm pointer-events-auto">
+          <div className="max-w-6xl mx-auto px-4 flex flex-col items-center justify-between gap-4 md:flex-row">
+            <span className="text-xs text-white/40">
+              © {new Date().getFullYear()} MiDika. {t('footerText')}{' '}
+              <span className="text-primary">♥</span> in Italy.
+            </span>
+            <div className="flex gap-6 text-xs text-white/40">
+              <a
+                href={`/privacy?lang=${language}`}
+                className="hover:text-white transition-colors"
+              >
+                {t('privacy')}
+              </a>
+              <a
+                href={`/cookie-policy?lang=${language}`}
+                className="hover:text-white transition-colors"
+              >
+                {t('cookiePolicy')}
+              </a>
+            </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      )}
     </div>
   );
 }

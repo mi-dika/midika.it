@@ -10,6 +10,27 @@ interface MarkdownProps {
 }
 
 export function Markdown({ content }: MarkdownProps) {
+  // Pre-process markdown to fix common formatting issues
+  const cleanedContent = content
+    // Remove follow-up question headings (they're handled by the tool, not in text)
+    // Pattern: ## What/How/Can/Do/Are... (question format at end of response)
+    // Only remove h2 (##) headings that match follow-up question patterns
+    // This preserves h1/h3 headings even if they end with ? (legitimate content)
+    .replace(
+      /\n?##+\s*(What|How|Can|Do|Are|Will|Would|Tell|Show|Explain|Describe|List|Give|Provide|Which|Who|When|Where|Why)\s+[^#\n]+\?/gi,
+      ''
+    )
+    // Remove h2 headings at the end of content that look like follow-up questions
+    // This is more conservative - only removes trailing h2 question headings
+    .replace(/\n?##+\s*[^#\n]+\?\s*$/g, '')
+    // Fix headings that are missing space before them (e.g., "text.## Heading" -> "text.\n\n## Heading")
+    .replace(/([.!?])(##+)/g, '$1\n\n$2')
+    // Ensure headings have proper spacing
+    .replace(/([^\n])(##+)/g, '$1\n$2')
+    // Fix multiple consecutive newlines
+    .replace(/\n{3,}/g, '\n\n')
+    .trim();
+
   const components: Components = {
     // Custom code block with copy button
     pre({ children }) {
@@ -110,7 +131,7 @@ export function Markdown({ content }: MarkdownProps) {
   return (
     <div className="prose prose-invert prose-sm max-w-none">
       <ReactMarkdown rehypePlugins={[rehypeHighlight]} components={components}>
-        {content}
+        {cleanedContent}
       </ReactMarkdown>
     </div>
   );
