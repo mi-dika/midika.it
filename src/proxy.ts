@@ -17,18 +17,10 @@ export default async function proxy(request: NextRequest) {
   const country = request.headers.get('x-vercel-ip-country') || 'unknown';
   const referrer = request.headers.get('referer') || '';
 
-  // Debug logging in development
-  if (process.env.NODE_ENV === 'development') {
-    console.log(`[Proxy] Tracking: ${path} from ${country}`);
-  }
-
   // Fire-and-forget tracking (don't block the response)
   // Track asynchronously without awaiting
-  trackPageView({ path, country, referrer }).catch((err) => {
-    // Log errors in development
-    if (process.env.NODE_ENV === 'development') {
-      console.error('[Proxy] Tracking failed:', err);
-    }
+  trackPageView({ path, country, referrer }).catch(() => {
+    // Silently fail - analytics should never break the app
   });
 
   return NextResponse.next();

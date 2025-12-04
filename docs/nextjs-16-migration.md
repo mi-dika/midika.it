@@ -54,8 +54,9 @@ mv middleware.ts proxy.ts
 
 **Project Impact:**
 
-- Currently not using middleware/proxy in this project
-- If you need to add network interception, use `proxy.ts` instead of `middleware.ts`
+- Using `src/proxy.ts` for server-side analytics tracking
+- If using the `src/` directory pattern, proxy must be in `src/proxy.ts`
+- The proxy function must be a **default export** when async
 
 ### 3. Runtime Config Removed
 
@@ -297,8 +298,8 @@ Next.js 16 works with ESLint 9 and the new flat config format:
 - [x] Removed `next lint` from scripts
 - [x] Added Prettier for code formatting
 - [x] Created comprehensive check script
+- [x] Migrated middleware.ts to proxy.ts (src/proxy.ts)
 - [ ] Audit all Server Components for async dynamic API usage
-- [ ] Migrate any middleware.ts to proxy.ts (if needed)
 - [ ] Ensure all environment variables use proper naming
 
 ---
