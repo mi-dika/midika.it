@@ -26,6 +26,10 @@ const mockCanvasContext = {
   lineTo: jest.fn(),
   stroke: jest.fn(),
   scale: jest.fn(),
+  setTransform: jest.fn(),
+  fillStyle: '',
+  strokeStyle: '',
+  lineWidth: 1,
 } as any;
 
 HTMLCanvasElement.prototype.getContext = jest.fn(() => mockCanvasContext);
@@ -49,6 +53,24 @@ HTMLCanvasElement.prototype.getBoundingClientRect = jest.fn(
 // Mock requestAnimationFrame and cancelAnimationFrame
 global.requestAnimationFrame = jest.fn((cb) => setTimeout(cb, 16));
 global.cancelAnimationFrame = jest.fn((id) => clearTimeout(id));
+
+// Mock devicePixelRatio
+Object.defineProperty(window, 'devicePixelRatio', {
+  writable: true,
+  configurable: true,
+  value: 1,
+});
+
+// Mock matchMedia for prefers-reduced-motion
+Object.defineProperty(window, 'matchMedia', {
+  writable: true,
+  configurable: true,
+  value: jest.fn(() => ({
+    matches: false,
+    addEventListener: jest.fn(),
+    removeEventListener: jest.fn(),
+  })),
+});
 
 describe('StarsBackground', () => {
   it('renders a canvas element', () => {
