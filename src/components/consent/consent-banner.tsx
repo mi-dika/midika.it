@@ -80,7 +80,7 @@ export function ConsentBanner() {
                     </button>
                     <button
                       onClick={acceptConsent}
-                      className="rounded-lg bg-primary px-4 py-2.5 text-xs font-medium text-white hover:bg-primary/90 transition-colors shadow-[0_0_20px_-5px_theme(colors.primary/0.5)]"
+                      className="rounded-lg bg-primary px-4 py-2.5 text-xs font-medium text-white hover:bg-primary/90 transition-colors shadow-[0_0_20px_-5px_rgba(249,115,22,0.5)]"
                     >
                       Accept All
                     </button>
