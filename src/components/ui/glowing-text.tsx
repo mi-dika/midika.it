@@ -14,7 +14,7 @@ export const GlowingText: React.FC<GlowingTextProps> = ({
     <div className={cn('relative flex items-center justify-center', className)}>
       {/* Blurred glow behind */}
       <h1
-        className="absolute select-none text-5xl font-bold tracking-tighter text-white blur-2xl sm:text-7xl md:text-9xl opacity-50"
+        className="absolute select-none text-5xl font-bold tracking-tighter text-white blur-xl sm:blur-2xl sm:text-7xl md:text-9xl opacity-50 transform-gpu"
         aria-hidden="true"
       >
         {text}
