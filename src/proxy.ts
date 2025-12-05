@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { trackPageView } from '@/lib/analytics';
+import { UAParser } from 'ua-parser-js';
 
 /**
  * Detect bot from user agent string
@@ -79,8 +80,23 @@ export default async function proxy(request: NextRequest) {
     }
   }
 
+  // Parse User Agent for analytics
+  const parser = new UAParser(userAgent);
+  const result = parser.getResult();
+  const browser = result.browser.name;
+  const os = result.os.name;
+  const device = result.device.type || 'desktop';
+
   // Fire-and-forget tracking (don't block the response)
-  trackPageView({ path, country, referrer, botName }).catch(() => {});
+  trackPageView({
+    path,
+    country,
+    referrer,
+    botName,
+    browser,
+    os,
+    device,
+  }).catch(() => {});
 
   return NextResponse.next();
 }

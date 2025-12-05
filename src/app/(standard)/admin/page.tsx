@@ -12,6 +12,11 @@ import {
   FileText,
   ExternalLink,
   Calendar,
+  Monitor,
+  Cpu,
+  Smartphone,
+  Tablet,
+  Laptop,
 } from 'lucide-react';
 import { ExportButton } from '@/components/admin/export-button';
 import { TimeFilter } from '@/components/admin/time-filter';
@@ -90,6 +95,18 @@ export default async function AnalyticsPage({
     .slice(0, 10);
 
   const topReferrers = Object.entries(analyticsData.byReferrer || {})
+    .sort(([, a], [, b]) => (b as number) - (a as number))
+    .slice(0, 10);
+
+  const topBrowsers = Object.entries(analyticsData.byBrowser || {})
+    .sort(([, a], [, b]) => (b as number) - (a as number))
+    .slice(0, 10);
+
+  const topOS = Object.entries(analyticsData.byOS || {})
+    .sort(([, a], [, b]) => (b as number) - (a as number))
+    .slice(0, 10);
+
+  const topDevices = Object.entries(analyticsData.byDevice || {})
     .sort(([, a], [, b]) => (b as number) - (a as number))
     .slice(0, 10);
 
@@ -305,6 +322,123 @@ export default async function AnalyticsPage({
                   <span className="relative z-10 flex items-center gap-3 font-medium text-white">
                     <ExternalLink className="h-5 w-5" />
                     {referrer}
+                  </span>
+                  <span className="relative z-10 text-white/60">
+                    {viewCount.toLocaleString()} views
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Top Browsers */}
+      {topBrowsers.length > 0 && (
+        <div className="mb-8 rounded-xl border border-white/10 bg-black/40 p-6 backdrop-blur-sm">
+          <h2 className="mb-6 text-xl font-semibold text-white">
+            Top Browsers
+          </h2>
+          <div className="space-y-3">
+            {topBrowsers.map(([browser, views]) => {
+              const viewCount =
+                typeof views === 'number' ? views : parseInt(views, 10) || 0;
+              const percentage =
+                analyticsData.totalViews > 0
+                  ? (viewCount / analyticsData.totalViews) * 100
+                  : 0;
+              return (
+                <div
+                  key={browser}
+                  className="relative flex items-center justify-between overflow-hidden rounded-lg border border-white/5 bg-white/5 px-4 py-3"
+                >
+                  <div
+                    className="absolute inset-y-0 left-0 bg-orange-500/20"
+                    style={{ width: `${percentage}%` }}
+                  />
+                  <span className="relative z-10 flex items-center gap-3 font-medium text-white">
+                    <Monitor className="h-5 w-5" />
+                    {browser}
+                  </span>
+                  <span className="relative z-10 text-white/60">
+                    {viewCount.toLocaleString()} views
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Top OS */}
+      {topOS.length > 0 && (
+        <div className="mb-8 rounded-xl border border-white/10 bg-black/40 p-6 backdrop-blur-sm">
+          <h2 className="mb-6 text-xl font-semibold text-white">
+            Top Operating Systems
+          </h2>
+          <div className="space-y-3">
+            {topOS.map(([os, views]) => {
+              const viewCount =
+                typeof views === 'number' ? views : parseInt(views, 10) || 0;
+              const percentage =
+                analyticsData.totalViews > 0
+                  ? (viewCount / analyticsData.totalViews) * 100
+                  : 0;
+              return (
+                <div
+                  key={os}
+                  className="relative flex items-center justify-between overflow-hidden rounded-lg border border-white/5 bg-white/5 px-4 py-3"
+                >
+                  <div
+                    className="absolute inset-y-0 left-0 bg-orange-500/20"
+                    style={{ width: `${percentage}%` }}
+                  />
+                  <span className="relative z-10 flex items-center gap-3 font-medium text-white">
+                    <Cpu className="h-5 w-5" />
+                    {os}
+                  </span>
+                  <span className="relative z-10 text-white/60">
+                    {viewCount.toLocaleString()} views
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Device Types */}
+      {topDevices.length > 0 && (
+        <div className="mb-8 rounded-xl border border-white/10 bg-black/40 p-6 backdrop-blur-sm">
+          <h2 className="mb-6 text-xl font-semibold text-white">
+            Device Types
+          </h2>
+          <div className="space-y-3">
+            {topDevices.map(([device, views]) => {
+              const viewCount =
+                typeof views === 'number' ? views : parseInt(views, 10) || 0;
+              const percentage =
+                analyticsData.totalViews > 0
+                  ? (viewCount / analyticsData.totalViews) * 100
+                  : 0;
+
+              let Icon = Monitor;
+              if (device === 'mobile') Icon = Smartphone;
+              if (device === 'tablet') Icon = Tablet;
+              if (device === 'desktop') Icon = Laptop;
+
+              return (
+                <div
+                  key={device}
+                  className="relative flex items-center justify-between overflow-hidden rounded-lg border border-white/5 bg-white/5 px-4 py-3"
+                >
+                  <div
+                    className="absolute inset-y-0 left-0 bg-orange-500/20"
+                    style={{ width: `${percentage}%` }}
+                  />
+                  <span className="relative z-10 flex items-center gap-3 font-medium text-white">
+                    <Icon className="h-5 w-5" />
+                    <span className="capitalize">{device}</span>
                   </span>
                   <span className="relative z-10 text-white/60">
                     {viewCount.toLocaleString()} views

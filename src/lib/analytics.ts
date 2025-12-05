@@ -7,6 +7,9 @@ export interface PageViewData {
   country: string;
   referrer?: string;
   botName?: string;
+  browser?: string;
+  os?: string;
+  device?: string;
 }
 
 export interface PageViewStats {
@@ -17,6 +20,9 @@ export interface PageViewStats {
   byBot: Record<string, number>;
   byDate?: Record<string, number>;
   byReferrer?: Record<string, number>;
+  byBrowser?: Record<string, number>;
+  byOS?: Record<string, number>;
+  byDevice?: Record<string, number>;
 }
 
 export interface GetPageViewsOptions {
@@ -62,6 +68,39 @@ export function generateReferrerKey(domain: string): string {
 }
 
 /**
+ * Generate a Redis key for browser tracking
+ * Format: browser:YYYY-MM-DD-HH:browserName
+ */
+export function generateBrowserKey(browser: string): string {
+  const now = new Date();
+  const date = format(now, 'yyyy-MM-dd');
+  const hour = format(now, 'HH');
+  return `browser:${date}-${hour}:${browser}`;
+}
+
+/**
+ * Generate a Redis key for OS tracking
+ * Format: os:YYYY-MM-DD-HH:osName
+ */
+export function generateOSKey(os: string): string {
+  const now = new Date();
+  const date = format(now, 'yyyy-MM-dd');
+  const hour = format(now, 'HH');
+  return `os:${date}-${hour}:${os}`;
+}
+
+/**
+ * Generate a Redis key for device tracking
+ * Format: device:YYYY-MM-DD-HH:deviceType
+ */
+export function generateDeviceKey(device: string): string {
+  const now = new Date();
+  const date = format(now, 'yyyy-MM-dd');
+  const hour = format(now, 'HH');
+  return `device:${date}-${hour}:${device}`;
+}
+
+/**
  * Track a pageview (fire-and-forget, doesn't block)
  * Applies KISS principle: simple increment operation
  * Applies DRY principle: single function for all tracking
@@ -95,6 +134,24 @@ export async function trackPageView(data: PageViewData): Promise<void> {
       } catch {
         // Invalid referrer URL, skip
       }
+    }
+
+    // Track browser
+    if (data.browser) {
+      const browserKey = generateBrowserKey(data.browser);
+      await kv.incr(browserKey);
+    }
+
+    // Track OS
+    if (data.os) {
+      const osKey = generateOSKey(data.os);
+      await kv.incr(osKey);
+    }
+
+    // Track device
+    if (data.device) {
+      const deviceKey = generateDeviceKey(data.device);
+      await kv.incr(deviceKey);
     }
   } catch {
     // Fail silently - analytics should never break the app
@@ -190,6 +247,15 @@ export async function getPageViews(
     // Get referrer statistics
     const referrerStats = await getReferrerStats(options.days);
 
+    // Get browser statistics
+    const browserStats = await getStats('browser', options.days);
+
+    // Get OS statistics
+    const osStats = await getStats('os', options.days);
+
+    // Get device statistics
+    const deviceStats = await getStats('device', options.days);
+
     return {
       totalViews,
       byCountry,
@@ -198,6 +264,9 @@ export async function getPageViews(
       botViews: botStats.botViews,
       byBot: botStats.byBot,
       byReferrer: referrerStats.byReferrer,
+      byBrowser: browserStats,
+      byOS: osStats,
+      byDevice: deviceStats,
     };
   } catch {
     // Fail gracefully - return empty stats
@@ -206,7 +275,70 @@ export async function getPageViews(
       byCountry: {},
       botViews: 0,
       byBot: {},
+      byBrowser: {},
+      byOS: {},
+      byDevice: {},
     };
+  }
+}
+
+/**
+ * Generic stats getter for simple key patterns
+ */
+async function getStats(
+  prefix: string,
+  days?: number
+): Promise<Record<string, number>> {
+  if (!env.KV_REST_API_URL || !env.KV_REST_API_TOKEN) {
+    return {};
+  }
+
+  try {
+    const keys = await kv.keys(`${prefix}:*`);
+
+    if (keys.length === 0) {
+      return {};
+    }
+
+    let filteredKeys = keys as string[];
+    if (days) {
+      const cutoffDate = new Date();
+      cutoffDate.setDate(cutoffDate.getDate() - days);
+      cutoffDate.setHours(0, 0, 0, 0);
+      const cutoffStr = format(cutoffDate, 'yyyy-MM-dd');
+
+      filteredKeys = keys.filter((key) => {
+        const match = key.match(
+          new RegExp(`^${prefix}:(\\d{4}-\\d{2}-\\d{2})-\\d{2}:`)
+        );
+        if (!match) return false;
+        return match[1] > cutoffStr;
+      });
+    }
+
+    if (filteredKeys.length === 0) {
+      return {};
+    }
+
+    const values = await kv.mget(...filteredKeys);
+    const counts = values.map((v) => (typeof v === 'number' ? v : 0));
+
+    const stats: Record<string, number> = {};
+
+    filteredKeys.forEach((key, index) => {
+      const count = counts[index];
+      const match = key.match(
+        new RegExp(`^${prefix}:\\d{4}-\\d{2}-\\d{2}-\\d{2}:(.+)$`)
+      );
+      if (match) {
+        const item = match[1];
+        stats[item] = (stats[item] || 0) + count;
+      }
+    });
+
+    return stats;
+  } catch {
+    return {};
   }
 }
 
